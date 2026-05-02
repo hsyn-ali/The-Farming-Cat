@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "+UZ/ytyaOcs=",
+  "dgSpecHash": "KCbdzlqBdXo=",
   "success": true,
   "projectFilePath": "C:\\Users\\Hsyn Ali\\Desktop\\game project\\game project.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Hsyn Ali\\.nuget\\packages\\raylib-cs\\7.0.2\\raylib-cs.7.0.2.nupkg.sha512"
+  ],
   "logs": []
 }
