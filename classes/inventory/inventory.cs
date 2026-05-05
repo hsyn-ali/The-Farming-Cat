@@ -59,6 +59,23 @@ public class Inventory
     }
 }
 
+// Total amount of this item across all slots
+    public int CountOf(Item item)
+    {
+        int total = 0;
+        for (int i = 0; i < SlotCount; i++)
+            if (Slots[i].Item == item) total += Slots[i].Count;
+        return total;
+    }
+
+    // Returns the index of the first slot containing this item, or -1
+    public int FindSlotWith(Item item)
+    {
+        for (int i = 0; i < SlotCount; i++)
+            if (Slots[i].Item == item) return i;
+        return -1;
+    }
+
     public Slot Selected => Slots[SelectedIndex];
 }
 

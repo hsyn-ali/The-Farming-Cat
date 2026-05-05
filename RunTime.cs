@@ -29,4 +29,11 @@ public static class RunTime
     public static Item WheatHarvestedItem = null!;
     public static Item CarrotHarvestedItem = null!;
     public static Item BeetrootHarvestedItem = null!;
+    
+// Animal farm
+public static Texture2D ChickenHouse;
+
+// Animal products
+public static Texture2D EggIcon;
+public static Item EggItem = null!;
 }

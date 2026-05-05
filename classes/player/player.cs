@@ -1,5 +1,6 @@
 using Raylib_cs;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using static Raylib_cs.Raylib;
 
@@ -10,7 +11,7 @@ public class Player
     private const int FrameWidth = 48;
     private const int FrameHeight = 48;
     private const int TotalFrames = 4;
-    private const float Scale = 3.5f;
+    private const float Scale = 3f;
     private const float Speed = 120f;
     private const float AnimSpeed = 0.15f;
 
@@ -32,7 +33,7 @@ public class Player
         FrameHeight * Scale * 0.4f
     );
 
-    public void Update(float dt, int mapWidth, int mapHeight)
+    public void Update(float dt, int mapWidth, int mapHeight, List<Rectangle> obstacles)
     {
         Vector2 input = new Vector2(0f, 0f);
 
@@ -44,7 +45,30 @@ public class Player
         if (input.X != 0f || input.Y != 0f)
         {
             Vector2 velocity = Vector2.Normalize(input) * Speed;
-            Position += velocity * dt;
+            float dx = velocity.X * dt;
+            float dy = velocity.Y * dt;
+
+            // Move on X axis, then resolve collisions
+            Position.X += dx;
+            foreach (var obs in obstacles)
+            {
+                if (CheckCollisionRecs(Hitbox, obs))
+                {
+                    if (dx > 0) Position.X -= Hitbox.X + Hitbox.Width - obs.X;
+                    else if (dx < 0) Position.X += obs.X + obs.Width - Hitbox.X;
+                }
+            }
+
+            // Move on Y axis, then resolve collisions
+            Position.Y += dy;
+            foreach (var obs in obstacles)
+            {
+                if (CheckCollisionRecs(Hitbox, obs))
+                {
+                    if (dy > 0) Position.Y -= Hitbox.Y + Hitbox.Height - obs.Y;
+                    else if (dy < 0) Position.Y += obs.Y + obs.Height - Hitbox.Y;
+                }
+            }
 
             _animTimer += dt;
             if (_animTimer >= AnimSpeed)
@@ -59,7 +83,7 @@ public class Player
             _animTimer = 0f;
         }
 
-        // Clamp player inside map bounds
+        // Clamp to map bounds
         float spriteWidth = FrameWidth * Scale;
         float spriteHeight = FrameHeight * Scale;
         Position.X = Math.Clamp(Position.X, 0f, mapWidth - spriteWidth);
