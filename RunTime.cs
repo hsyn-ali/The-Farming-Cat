@@ -8,5 +8,7 @@ namespace Game
     {
         // Player
         public static Texture2D PlayerRun;
+        public static Texture2D WheatSeedIcon;
+        public static Texture2D Hotbar;
     }
 }

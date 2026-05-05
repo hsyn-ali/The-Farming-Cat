@@ -10,7 +10,7 @@ public class Player
     private const int FrameWidth = 48;
     private const int FrameHeight = 48;
     private const int TotalFrames = 4;
-    private const float Scale = 3f;
+    private const float Scale = 3.5f;
     private const float Speed = 120f;
     private const float AnimSpeed = 0.15f;
 
