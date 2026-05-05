@@ -46,6 +46,19 @@ public class Inventory
         return count - remaining;
     }
 
+    public void RemoveOne(int slotIndex)
+{
+    Slot slot = Slots[slotIndex];
+    if (slot.Item == null) return;
+
+    slot.Count--;
+    if (slot.Count <= 0)
+    {
+        slot.Item = null;
+        slot.Count = 0;
+    }
+}
+
     public Slot Selected => Slots[SelectedIndex];
 }
 
@@ -121,4 +134,6 @@ public class Hotbar
                 DrawRectangleLinesEx(slotRect, 4, Color.Yellow);
         }
     }
+
+    
 }

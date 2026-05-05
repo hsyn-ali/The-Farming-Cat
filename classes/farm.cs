@@ -15,45 +15,72 @@ public class Farm
 
     public Rectangle Area => new Rectangle(StartX, StartY, Cols * TileSize, Rows * TileSize);
 
+    private readonly Crop?[,] _crops = new Crop?[Cols, Rows];
+
     public Farm(int startX, int startY)
     {
         StartX = startX;
         StartY = startY;
     }
 
-    // Returns (col, row) of the tile at this world point, or null if outside the farm
     public (int col, int row)? GetTileAt(Vector2 worldPoint)
     {
         int col = (int)((worldPoint.X - StartX) / TileSize);
         int row = (int)((worldPoint.Y - StartY) / TileSize);
-
-        if (col < 0 || col >= Cols || row < 0 || row >= Rows)
-            return null;
-
+        if (col < 0 || col >= Cols || row < 0 || row >= Rows) return null;
         return (col, row);
     }
 
-    // World-space rectangle for a given tile
     public Rectangle GetTileRect(int col, int row)
     {
-        return new Rectangle(
-            StartX + col * TileSize,
-            StartY + row * TileSize,
-            TileSize,
-            TileSize
-        );
+        return new Rectangle(StartX + col * TileSize, StartY + row * TileSize, TileSize, TileSize);
+    }
+
+    public bool TryPlant(int col, int row, Item item)
+    {
+        if (!item.IsPlantable) return false;
+        if (_crops[col, row] != null) return false;
+
+        _crops[col, row] = item.CreateCrop!();
+        return true;
+    }
+
+    // Returns the harvested item, or null if no harvest happened.
+    public Item? TryHarvest(int col, int row)
+    {
+        Crop? crop = _crops[col, row];
+        if (crop == null || !crop.IsFullyGrown) return null;
+
+        Item harvested = crop.HarvestedItem;
+        _crops[col, row] = null;
+        return harvested;
+    }
+
+    public void Update(float dt)
+    {
+        for (int c = 0; c < Cols; c++)
+            for (int r = 0; r < Rows; r++)
+                _crops[c, r]?.Update(dt);
     }
 
     public void Draw(Vector2 playerFeet)
     {
-        // Debug outline of the plantable area
         DrawRectangleLinesEx(Area, 2, Color.Yellow);
 
-        // Highlight under the player's feet, if on a tile
-        var tile = GetTileAt(playerFeet);
-        if (tile.HasValue)
+        for (int c = 0; c < Cols; c++)
         {
-            Rectangle highlight = GetTileRect(tile.Value.col, tile.Value.row);
+            for (int r = 0; r < Rows; r++)
+            {
+                Crop? crop = _crops[c, r];
+                if (crop != null)
+                    crop.Draw(GetTileRect(c, r));
+            }
+        }
+
+        var tileUnder = GetTileAt(playerFeet);
+        if (tileUnder.HasValue)
+        {
+            Rectangle highlight = GetTileRect(tileUnder.Value.col, tileUnder.Value.row);
             DrawRectangleLinesEx(highlight, 2, Color.White);
         }
     }
