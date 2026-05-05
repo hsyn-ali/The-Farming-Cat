@@ -1,4 +1,5 @@
 using Raylib_cs;
+using System;
 using System.Numerics;
 using static Raylib_cs.Raylib;
 
@@ -31,7 +32,7 @@ public class Player
         FrameHeight * Scale * 0.4f
     );
 
-    public void Update(float dt)
+    public void Update(float dt, int mapWidth, int mapHeight)
     {
         Vector2 input = new Vector2(0f, 0f);
 
@@ -57,6 +58,12 @@ public class Player
             _currentFrame = 0;
             _animTimer = 0f;
         }
+
+        // Clamp player inside map bounds
+        float spriteWidth = FrameWidth * Scale;
+        float spriteHeight = FrameHeight * Scale;
+        Position.X = Math.Clamp(Position.X, 0f, mapWidth - spriteWidth);
+        Position.Y = Math.Clamp(Position.Y, 0f, mapHeight - spriteHeight);
     }
 
     public void Draw()

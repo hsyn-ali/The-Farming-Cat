@@ -10,28 +10,26 @@ RunTime.PlayerRun = LoadTexture("resources/assets/player/player_run.png");
 Map map = new Map("resources/assets/map/map.png");
 
 Player player = new Player(new Vector2(400, 300));
-
-Camera2D camera = new Camera2D
-{
-    Target = player.Position,
-    Offset = new Vector2(400, 300),   // half the window size — puts target at screen center
-    Rotation = 0f,
-    Zoom = 1f
-};
+Camera camera = new Camera(player.Position, new Vector2(1920, 1080));
+Farm farm = new Farm(656, 1088);
 
 while (!WindowShouldClose())
 {
     float dt = GetFrameTime();
-    player.Update(dt);
+    player.Update(dt, map.Width, map.Height);
+    camera.Follow(player.Position, map.Width, map.Height);
 
-    // Camera follows the player every frame
-    camera.Target = player.Position;
+    Vector2 playerFeet = new Vector2(
+        player.Hitbox.X + player.Hitbox.Width / 2f,
+        player.Hitbox.Y + player.Hitbox.Height / 2f
+    );
 
     BeginDrawing();
     ClearBackground(Color.RayWhite);
 
-    BeginMode2D(camera);
+    BeginMode2D(camera.Raw);
         map.Draw();
+        farm.Draw(playerFeet);
         player.Draw();
     EndMode2D();
 
