@@ -19,11 +19,11 @@ public abstract class AnimalFarm
     protected abstract Texture2D Sprite { get; }
     protected abstract float WaitTime { get; }
     protected abstract Item ProducedItem { get; }
+    protected abstract Item FeedItem { get; }
     protected abstract string Title { get; }
 
     public Rectangle Hitbox => new Rectangle(Position.X, Position.Y, DrawSize, DrawSize);
 
-    // Area around the hitbox where the player can press E to open the popup
     public Rectangle InteractZone => new Rectangle(
         Position.X - 40,
         Position.Y - 40,
@@ -66,10 +66,7 @@ public abstract class AnimalFarm
         DrawRectangleLinesEx(Hitbox, 2, Color.Red);  // debug
     }
 
-    // Draws the popup in screen space and handles button clicks.
-    // Called outside BeginMode2D so it stays fixed on screen.
-    // Returns true if the popup consumed a button click this frame.
-    public void DrawPopup(int screenW, int screenH, Inventory inventory, Item feedItem)
+    public void DrawPopup(int screenW, int screenH, Inventory inventory)
     {
         if (!IsPopupOpen) return;
 
@@ -89,7 +86,7 @@ public abstract class AnimalFarm
         // Title
         DrawText(Title, popupX + 24, popupY + 24, 28, Color.White);
 
-        // Close button (top-right X)
+        // Close button
         Rectangle closeBtn = new Rectangle(popupX + popupW - 44, popupY + 12, 32, 32);
         DrawRectangleRec(closeBtn, new Color(150, 50, 50, 255));
         DrawText("X", (int)closeBtn.X + 10, (int)closeBtn.Y + 6, 24, Color.White);
@@ -99,19 +96,19 @@ public abstract class AnimalFarm
             return;
         }
 
-        // Wheat counter (top-right under close button)
-        int wheatCount = inventory.CountOf(feedItem);
+        // Feed counter (top-right under close button)
+        int feedCount = inventory.CountOf(FeedItem);
         DrawTexturePro(
-            feedItem.Icon,
-            new Rectangle(0, 0, feedItem.Icon.Width, feedItem.Icon.Height),
+            FeedItem.Icon,
+            new Rectangle(0, 0, FeedItem.Icon.Width, FeedItem.Icon.Height),
             new Rectangle(popupX + popupW - 100, popupY + 60, 32, 32),
             new Vector2(0, 0),
             0f,
             Color.White
         );
-        DrawText($"x {wheatCount}", popupX + popupW - 60, popupY + 66, 22, Color.White);
+        DrawText($"x {feedCount}", popupX + popupW - 60, popupY + 66, 22, Color.White);
 
-        // State text in middle
+        // State text
         string stateText = State switch
         {
             AnimalFarmState.Hungry => "The animals are hungry.",
@@ -124,7 +121,7 @@ public abstract class AnimalFarm
         // Action button
         string buttonLabel = State == AnimalFarmState.Ready ? "Collect" : "Feed";
         bool buttonEnabled =
-            (State == AnimalFarmState.Hungry && wheatCount > 0) ||
+            (State == AnimalFarmState.Hungry && feedCount > 0) ||
             (State == AnimalFarmState.Ready);
 
         Rectangle buttonRect = new Rectangle(popupX + popupW / 2 - 80, popupY + popupH - 70, 160, 50);
@@ -132,7 +129,6 @@ public abstract class AnimalFarm
         DrawRectangleRec(buttonRect, buttonColor);
         DrawRectangleLinesEx(buttonRect, 2, Color.White);
 
-        // Center the button text
         int textWidth = MeasureText(buttonLabel, 24);
         DrawText(
             buttonLabel,
@@ -149,8 +145,7 @@ public abstract class AnimalFarm
         {
             if (State == AnimalFarmState.Hungry)
             {
-                // Feed: consume 1 wheat, start waiting
-                int feedSlot = inventory.FindSlotWith(feedItem);
+                int feedSlot = inventory.FindSlotWith(FeedItem);
                 if (feedSlot >= 0)
                 {
                     inventory.RemoveOne(feedSlot);
@@ -160,11 +155,11 @@ public abstract class AnimalFarm
             }
             else if (State == AnimalFarmState.Ready)
             {
-                // Collect: add 1 produced item, back to hungry
                 inventory.Add(ProducedItem, 1);
                 State = AnimalFarmState.Hungry;
             }
         }
     }
 }
+
 

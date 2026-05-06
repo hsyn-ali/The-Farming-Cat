@@ -10,6 +10,6 @@ public class ChickenHouse : AnimalFarm
     protected override Texture2D Sprite => RunTime.ChickenHouse;
     protected override float WaitTime => 30f;
     protected override Item ProducedItem => RunTime.EggItem;
+    protected override Item FeedItem => RunTime.ChickenFeedItem;
     protected override string Title => "Chicken House";
-    
 }

@@ -106,51 +106,72 @@ public class Hotbar
         }
     }
 
-    public void Draw(int screenWidth, int screenHeight)
+ public void Draw(int screenWidth, int screenHeight)
+{
+    int totalWidth = Inventory.SlotCount * SlotSize;
+    int startX = (screenWidth - totalWidth) / 2;
+    int y = screenHeight - SlotSize - BottomMargin;
+
+    // Draw the whole hotbar sprite once, scaled
+    DrawTexturePro(
+        RunTime.Hotbar,
+        new Rectangle(0, 0, RunTime.Hotbar.Width, RunTime.Hotbar.Height),
+        new Rectangle(startX, y, totalWidth, SlotSize),
+        new Vector2(0, 0),
+        0f,
+        Color.White
+    );
+
+    // Draw items + selection on top, slot by slot
+    for (int i = 0; i < Inventory.SlotCount; i++)
     {
-        int totalWidth = Inventory.SlotCount * SlotSize;
-        int startX = (screenWidth - totalWidth) / 2;
-        int y = screenHeight - SlotSize - BottomMargin;
+        int x = startX + i * SlotSize;
+        Rectangle slotRect = new Rectangle(x, y, SlotSize, SlotSize);
 
-        // Draw the whole hotbar sprite once, scaled
-        DrawTexturePro(
-            RunTime.Hotbar,
-            new Rectangle(0, 0, RunTime.Hotbar.Width, RunTime.Hotbar.Height),
-            new Rectangle(startX, y, totalWidth, SlotSize),
-            new Vector2(0, 0),
-            0f,
-            Color.White
-        );
-
-        // Draw items + selection on top, slot by slot
-        for (int i = 0; i < Inventory.SlotCount; i++)
+        Slot slot = _inventory.Slots[i];
+        if (slot.Item != null)
         {
-            int x = startX + i * SlotSize;
-            Rectangle slotRect = new Rectangle(x, y, SlotSize, SlotSize);
+            DrawTexturePro(
+                slot.Item.Icon,
+                new Rectangle(0, 0, slot.Item.Icon.Width, slot.Item.Icon.Height),
+                slotRect,
+                new Vector2(0, 0),
+                0f,
+                Color.White
+            );
 
-            Slot slot = _inventory.Slots[i];
-            if (slot.Item != null)
+            if (slot.Count > 1)
             {
-                DrawTexturePro(
-                    slot.Item.Icon,
-                    new Rectangle(0, 0, slot.Item.Icon.Width, slot.Item.Icon.Height),
-                    slotRect,
-                    new Vector2(0, 0),
-                    0f,
-                    Color.White
-                );
-
-                if (slot.Count > 1)
-                {
-                    string countText = slot.Count.ToString();
-                    DrawText(countText, x + SlotSize - 22, y + SlotSize - 22, 20, Color.White);
-                }
+                string countText = slot.Count.ToString();
+                DrawText(countText, x + SlotSize - 22, y + SlotSize - 22, 20, Color.White);
             }
-
-            if (i == _inventory.SelectedIndex)
-                DrawRectangleLinesEx(slotRect, 4, Color.Yellow);
         }
+
+        if (i == _inventory.SelectedIndex)
+            DrawRectangleLinesEx(slotRect, 4, Color.Yellow);
     }
 
-    
+    // Selected item name, centered above the hotbar
+    Slot selected = _inventory.Selected;
+    if (selected.Item != null)
+    {
+        int fontSize = 24;
+        int textWidth = MeasureText(selected.Item.Name, fontSize);
+
+        int textX = (screenWidth - textWidth) / 2;
+        int textY = y - fontSize - 10;
+
+        // Subtle dark background behind the text for readability
+        int padding = 10;
+        DrawRectangle(
+            textX - padding,
+            textY - 4,
+            textWidth + padding * 2,
+            fontSize + 8,
+            new Color(0, 0, 0, 150)
+        );
+
+        DrawText(selected.Item.Name, textX, textY, fontSize, Color.White);
+    }
+}
 }
