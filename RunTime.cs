@@ -25,15 +25,22 @@ public static class RunTime
     public static Texture2D CarrotHarvestedIcon;
     public static Texture2D BeetrootHarvestedIcon;
 
-    // Harvested item definitions (created at startup, referenced by crops)
+    // Animal farms
+    public static Texture2D ChickenHouse;
+    public static Texture2D CowHouse;
+    public static Texture2D SheepHouse;
+
+    // Animal products (icons)
+    public static Texture2D EggIcon;
+    public static Texture2D MilkIcon;
+    public static Texture2D WoolIcon;
+
+    // Item definitions
     public static Item WheatHarvestedItem = null!;
     public static Item CarrotHarvestedItem = null!;
     public static Item BeetrootHarvestedItem = null!;
-    
-// Animal farm
-public static Texture2D ChickenHouse;
 
-// Animal products
-public static Texture2D EggIcon;
-public static Item EggItem = null!;
+    public static Item EggItem = null!;
+    public static Item MilkItem = null!;
+    public static Item WoolItem = null!;
 }
