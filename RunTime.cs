@@ -54,4 +54,9 @@ public static class RunTime
     public static Item ChickenFeedItem = null!;
     public static Item CowFeedItem = null!;
     public static Item SheepFeedItem = null!;
+    
+    // Factories
+    public static Texture2D ChickenFactory;
+    public static Texture2D CowFactory;
+    public static Texture2D SheepFactory;
 }

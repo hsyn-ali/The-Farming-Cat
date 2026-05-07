@@ -9,39 +9,53 @@ InitWindow(1920, 1080, "Farm Game");
 ToggleFullscreen();
 SetTargetFPS(60);
 
+List<Texture2D> textures = new List<Texture2D>();
+
+Texture2D LoadTex(string path)
+{
+    Texture2D tex = LoadTexture(path);
+    textures.Add(tex);
+    return tex;
+}
+
 // Player & UI
-RunTime.PlayerRun = LoadTexture("resources/assets/player/player_run.png");
-RunTime.Hotbar = LoadTexture("resources/assets/hotbar/hotbar.png");
+RunTime.PlayerRun = LoadTex("resources/assets/player/player_run.png");
+RunTime.Hotbar = LoadTex("resources/assets/hotbar/hotbar.png");
 
 // Seed icons
-RunTime.WheatSeedIcon = LoadTexture("resources/assets/crops/wheet_seed.png");
-RunTime.CarrotSeedIcon = LoadTexture("resources/assets/crops/carrot_seed.png");
-RunTime.BeetrootSeedIcon = LoadTexture("resources/assets/crops/beetroot_seed.png");
+RunTime.WheatSeedIcon = LoadTex("resources/assets/crops/wheet_seed.png");
+RunTime.CarrotSeedIcon = LoadTex("resources/assets/crops/carrot_seed.png");
+RunTime.BeetrootSeedIcon = LoadTex("resources/assets/crops/beetroot_seed.png");
 
 // Planted spritesheets
-RunTime.WheatPlanted = LoadTexture("resources/assets/crops/wheet_planted.png");
-RunTime.CarrotPlanted = LoadTexture("resources/assets/crops/carrot_planted.png");
-RunTime.BeetrootPlanted = LoadTexture("resources/assets/crops/beetroot_planted.png");
+RunTime.WheatPlanted = LoadTex("resources/assets/crops/wheet_planted.png");
+RunTime.CarrotPlanted = LoadTex("resources/assets/crops/carrot_planted.png");
+RunTime.BeetrootPlanted = LoadTex("resources/assets/crops/beetroot_planted.png");
 
 // Harvested icons
-RunTime.WheatHarvestedIcon = LoadTexture("resources/assets/crops/wheet_harvested.png");
-RunTime.CarrotHarvestedIcon = LoadTexture("resources/assets/crops/carrot_harvested.png");
-RunTime.BeetrootHarvestedIcon = LoadTexture("resources/assets/crops/beetroot_harvested.png");
+RunTime.WheatHarvestedIcon = LoadTex("resources/assets/crops/wheet_harvested.png");
+RunTime.CarrotHarvestedIcon = LoadTex("resources/assets/crops/carrot_harvested.png");
+RunTime.BeetrootHarvestedIcon = LoadTex("resources/assets/crops/beetroot_harvested.png");
 
 // Animal farms
-RunTime.ChickenHouse = LoadTexture("resources/assets/animal farms/chicken_house.png");
-RunTime.CowHouse = LoadTexture("resources/assets/animal farms/cow_house.png");
-RunTime.SheepHouse = LoadTexture("resources/assets/animal farms/sheep_house.png");
+RunTime.ChickenHouse = LoadTex("resources/assets/animal farms/chicken_house.png");
+RunTime.CowHouse = LoadTex("resources/assets/animal farms/cow_house.png");
+RunTime.SheepHouse = LoadTex("resources/assets/animal farms/sheep_house.png");
 
 // Animal product icons
-RunTime.EggIcon = LoadTexture("resources/assets/animal products/egg.png");
-RunTime.MilkIcon = LoadTexture("resources/assets/animal products/milk.png");
-RunTime.WoolIcon = LoadTexture("resources/assets/animal products/wool.png");
+RunTime.EggIcon = LoadTex("resources/assets/animal products/egg.png");
+RunTime.MilkIcon = LoadTex("resources/assets/animal products/milk.png");
+RunTime.WoolIcon = LoadTex("resources/assets/animal products/wool.png");
 
 // Animal feed icons
-RunTime.ChickenFeedIcon = LoadTexture("resources/assets/animal products/chicken_feed.png");
-RunTime.CowFeedIcon = LoadTexture("resources/assets/animal products/cow_feed.png");
-RunTime.SheepFeedIcon = LoadTexture("resources/assets/animal products/sheep_feed.png");
+RunTime.ChickenFeedIcon = LoadTex("resources/assets/animal products/chicken_feed.png");
+RunTime.CowFeedIcon = LoadTex("resources/assets/animal products/cow_feed.png");
+RunTime.SheepFeedIcon = LoadTex("resources/assets/animal products/sheep_feed.png");
+
+// factories
+RunTime.ChickenFactory = LoadTex("resources/assets/factories/chicken_factory.png");
+RunTime.CowFactory = LoadTex("resources/assets/factories/cow_factory.png");
+RunTime.SheepFactory = LoadTex("resources/assets/factories/sheep_factory.png");
 
 // Define harvested + animal product + feed items
 RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon);
@@ -72,6 +86,12 @@ ChickenHouse chickenHouse = new ChickenHouse(new Vector2(1430, 340));
 CowHouse cowHouse = new CowHouse(new Vector2(1640, 340));
 SheepHouse sheepHouse = new SheepHouse(new Vector2(1870, 340));
 
+// factories
+ChickenFactory chickenFactory = new ChickenFactory(new Vector2(150, 135));
+CowFactory cowFactory = new CowFactory(new Vector2(315, 650));
+SheepFactory sheepFactory = new SheepFactory(new Vector2(550, 650));
+
+List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepFactory };
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };
 
 // Inventory
@@ -82,6 +102,7 @@ inventory.Add(beetrootSeed, 10);
 inventory.Add(RunTime.ChickenFeedItem, 1);
 inventory.Add(RunTime.CowFeedItem, 1);
 inventory.Add(RunTime.SheepFeedItem, 1);
+inventory.Add(RunTime.WheatHarvestedItem, 10);
 
 Hotbar hotbar = new Hotbar(inventory);
 
@@ -90,57 +111,82 @@ while (!WindowShouldClose())
     float dt = GetFrameTime();
 
     foreach (var af in animalFarms) af.Update(dt);
+    foreach (var f in factories) f.Update(dt);
 
-    bool anyPopupOpen = animalFarms.Any(af => af.IsPopupOpen);
+   bool anyPopupOpen =
+    animalFarms.Any(af => af.IsPopupOpen) ||
+    factories.Any(f => f.IsPopupOpen);
 
     if (!anyPopupOpen)
     {
         List<Rectangle> obstacles = new List<Rectangle>();
-        foreach (var af in animalFarms) obstacles.Add(af.Hitbox);
 
+        foreach (var af in animalFarms)
+            obstacles.Add(af.Hitbox);
+
+        foreach (var f in factories)
+            obstacles.Add(f.Hitbox);
         player.Update(dt, map.Width, map.Height, obstacles);
         camera.Follow(player.Position, map.Width, map.Height);
         hotbar.Update();
 
-        if (IsKeyPressed(KeyboardKey.E))
-        {
-            bool opened = false;
-            foreach (var af in animalFarms)
-            {
-                if (af.CanPlayerInteract(player.Hitbox))
-                {
-                    af.OpenPopup();
-                    opened = true;
-                    break;
-                }
-            }
+ if (IsKeyPressed(KeyboardKey.E))
+{
+    bool opened = false;
 
-            if (!opened)
+    // ANIMAL FARMS
+    foreach (var af in animalFarms)
+    {
+        if (af.CanPlayerInteract(player.Hitbox))
+        {
+            af.OpenPopup();
+            opened = true;
+            break;
+        }
+    }
+
+    // FACTORIES (MISSING BEFORE)
+    if (!opened)
+    {
+        foreach (var f in factories)
+        {
+            if (f.CanPlayerInteract(player.Hitbox))
             {
-                Vector2 feet = new Vector2(
-                    player.Hitbox.X + player.Hitbox.Width / 2f,
-                    player.Hitbox.Y + player.Hitbox.Height / 2f
-                );
-                var tile = farm.GetTileAt(feet);
-                if (tile.HasValue)
+                f.OpenPopup();
+                opened = true;
+                break;
+            }
+        }
+    }
+
+    // FARM TILE LOGIC (only if nothing opened)
+    if (!opened)
+    {
+        Vector2 feet = new Vector2(
+            player.Hitbox.X + player.Hitbox.Width / 2f,
+            player.Hitbox.Y + player.Hitbox.Height / 2f
+        );
+
+        var tile = farm.GetTileAt(feet);
+        if (tile.HasValue)
+        {
+            Item? harvested = farm.TryHarvest(tile.Value.col, tile.Value.row);
+            if (harvested != null)
+            {
+                inventory.Add(harvested, 1);
+            }
+            else
+            {
+                Slot selected = inventory.Selected;
+                if (selected.Item != null && selected.Item.IsPlantable)
                 {
-                    Item? harvested = farm.TryHarvest(tile.Value.col, tile.Value.row);
-                    if (harvested != null)
-                    {
-                        inventory.Add(harvested, 1);
-                    }
-                    else
-                    {
-                        Slot selected = inventory.Selected;
-                        if (selected.Item != null && selected.Item.IsPlantable)
-                        {
-                            if (farm.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
-                                inventory.RemoveOne(inventory.SelectedIndex);
-                        }
-                    }
+                    if (farm.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
+                        inventory.RemoveOne(inventory.SelectedIndex);
                 }
             }
         }
+    }
+}
     }
 
     farm.Update(dt);
@@ -157,36 +203,29 @@ while (!WindowShouldClose())
         map.Draw();
         farm.Draw(playerFeet);
         foreach (var af in animalFarms) af.Draw();
+        foreach (var f in factories) f.Draw();
         player.Draw();
     EndMode2D();
 
     hotbar.Draw(1920, 1080);
 
     foreach (var af in animalFarms)
+    {
         af.DrawPopup(1920, 1080, inventory);
+    }
+
+    foreach (var f in factories)
+    {
+        f.DrawPopup(1920, 1080, inventory);
+    }
 
     EndDrawing();
 }
+foreach (var tex in textures)
+{
+    UnloadTexture(tex);
+}
+textures.Clear();
 
-UnloadTexture(RunTime.PlayerRun);
-UnloadTexture(RunTime.Hotbar);
-UnloadTexture(RunTime.WheatSeedIcon);
-UnloadTexture(RunTime.CarrotSeedIcon);
-UnloadTexture(RunTime.BeetrootSeedIcon);
-UnloadTexture(RunTime.WheatPlanted);
-UnloadTexture(RunTime.CarrotPlanted);
-UnloadTexture(RunTime.BeetrootPlanted);
-UnloadTexture(RunTime.WheatHarvestedIcon);
-UnloadTexture(RunTime.CarrotHarvestedIcon);
-UnloadTexture(RunTime.BeetrootHarvestedIcon);
-UnloadTexture(RunTime.ChickenHouse);
-UnloadTexture(RunTime.CowHouse);
-UnloadTexture(RunTime.SheepHouse);
-UnloadTexture(RunTime.EggIcon);
-UnloadTexture(RunTime.MilkIcon);
-UnloadTexture(RunTime.WoolIcon);
-UnloadTexture(RunTime.ChickenFeedIcon);
-UnloadTexture(RunTime.CowFeedIcon);
-UnloadTexture(RunTime.SheepFeedIcon);
 map.Unload();
 CloseWindow();
