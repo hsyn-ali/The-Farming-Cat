@@ -57,6 +57,9 @@ RunTime.ChickenFactory = LoadTex("resources/assets/factories/chicken_factory.png
 RunTime.CowFactory = LoadTex("resources/assets/factories/cow_factory.png");
 RunTime.SheepFactory = LoadTex("resources/assets/factories/sheep_factory.png");
 
+//Shop
+RunTime.ShopBuilding = LoadTex("resources/assets/shop/shop.png");
+
 // Define harvested + animal product + feed items
 RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon);
 RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon);
@@ -71,9 +74,9 @@ RunTime.CowFeedItem = new Item("Cow Feed", RunTime.CowFeedIcon);
 RunTime.SheepFeedItem = new Item("Sheep Feed", RunTime.SheepFeedIcon);
 
 // Define seed items
-Item wheatSeed = new Item("Wheat Seed", RunTime.WheatSeedIcon, createCrop: () => new WheatCrop());
-Item carrotSeed = new Item("Carrot Seed", RunTime.CarrotSeedIcon, createCrop: () => new CarrotCrop());
-Item beetrootSeed = new Item("Beetroot Seed", RunTime.BeetrootSeedIcon, createCrop: () => new BeetrootCrop());
+RunTime.WheatSeedItem = new Item("Wheat Seed", RunTime.WheatSeedIcon, createCrop: () => new WheatCrop());
+RunTime.CarrotSeedItem = new Item("Carrot Seed", RunTime.CarrotSeedIcon, createCrop: () => new CarrotCrop());
+RunTime.BeetrootSeedItem = new Item("Beetroot Seed", RunTime.BeetrootSeedIcon, createCrop: () => new BeetrootCrop());
 
 // World
 Map map = new Map("resources/assets/map/map.png");
@@ -91,31 +94,37 @@ ChickenFactory chickenFactory = new ChickenFactory(new Vector2(150, 135));
 CowFactory cowFactory = new CowFactory(new Vector2(315, 650));
 SheepFactory sheepFactory = new SheepFactory(new Vector2(550, 650));
 
+//shop
+Shop shop = new Shop(new Vector2(440, 1110)); 
+
 List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepFactory };
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };
+List<InteractableBuilding> shops = new List<InteractableBuilding> { shop };
 
-// Inventory
+// Inventory — start with wheat seeds only, plus a small coin pool
 Inventory inventory = new Inventory();
-inventory.Add(wheatSeed, 10);
-inventory.Add(carrotSeed, 10);
-inventory.Add(beetrootSeed, 10);
-inventory.Add(RunTime.ChickenFeedItem, 1);
-inventory.Add(RunTime.CowFeedItem, 1);
-inventory.Add(RunTime.SheepFeedItem, 1);
-inventory.Add(RunTime.WheatHarvestedItem, 10);
+inventory.Add(RunTime.WheatSeedItem, 10);
+PlayerStats.AddCoins(50);
 
 Hotbar hotbar = new Hotbar(inventory);
+HUD hud = new HUD();
 
 while (!WindowShouldClose())
 {
     float dt = GetFrameTime();
 
+    // DEBUG keys — remove before submission
+    if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
+    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
+
     foreach (var af in animalFarms) af.Update(dt);
     foreach (var f in factories) f.Update(dt);
-
-   bool anyPopupOpen =
-    animalFarms.Any(af => af.IsPopupOpen) ||
-    factories.Any(f => f.IsPopupOpen);
+    foreach (var s in shops)s.Update(dt);
+    
+    bool anyPopupOpen =
+        animalFarms.Any(af => af.IsPopupOpen) ||
+        factories.Any(f => f.IsPopupOpen) ||
+        shops.Any(s => s.IsPopupOpen);
 
     if (!anyPopupOpen)
     {
@@ -126,67 +135,85 @@ while (!WindowShouldClose())
 
         foreach (var f in factories)
             obstacles.Add(f.Hitbox);
+
+        foreach (var s in shops)
+            obstacles.Add(s.Hitbox);
+
         player.Update(dt, map.Width, map.Height, obstacles);
         camera.Follow(player.Position, map.Width, map.Height);
         hotbar.Update();
 
- if (IsKeyPressed(KeyboardKey.E))
-{
-    bool opened = false;
-
-    // ANIMAL FARMS
-    foreach (var af in animalFarms)
-    {
-        if (af.CanPlayerInteract(player.Hitbox))
+        if (IsKeyPressed(KeyboardKey.E))
         {
-            af.OpenPopup();
-            opened = true;
-            break;
-        }
-    }
+            bool opened = false;
 
-    // FACTORIES (MISSING BEFORE)
-    if (!opened)
-    {
-        foreach (var f in factories)
-        {
-            if (f.CanPlayerInteract(player.Hitbox))
+            // ANIMAL FARMS
+            foreach (var af in animalFarms)
             {
-                f.OpenPopup();
-                opened = true;
-                break;
-            }
-        }
-    }
-
-    // FARM TILE LOGIC (only if nothing opened)
-    if (!opened)
-    {
-        Vector2 feet = new Vector2(
-            player.Hitbox.X + player.Hitbox.Width / 2f,
-            player.Hitbox.Y + player.Hitbox.Height / 2f
-        );
-
-        var tile = farm.GetTileAt(feet);
-        if (tile.HasValue)
-        {
-            Item? harvested = farm.TryHarvest(tile.Value.col, tile.Value.row);
-            if (harvested != null)
-            {
-                inventory.Add(harvested, 1);
-            }
-            else
-            {
-                Slot selected = inventory.Selected;
-                if (selected.Item != null && selected.Item.IsPlantable)
+                if (af.CanPlayerInteract(player.Hitbox))
                 {
-                    if (farm.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
-                        inventory.RemoveOne(inventory.SelectedIndex);
+                    af.OpenPopup();
+                    opened = true;
+                    break;
+                }
+            }
+
+            // FACTORIES
+            if (!opened)
+            {
+                foreach (var f in factories)
+                {
+                    if (f.CanPlayerInteract(player.Hitbox))
+                    {
+                        f.OpenPopup();
+                        opened = true;
+                        break;
+                    }
+                }
+            }
+
+            // SHOPS
+            if (!opened)
+            {
+                foreach (var s in shops)
+                {
+                    if (s.CanPlayerInteract(player.Hitbox))
+                    {
+                        s.OpenPopup();
+                        opened = true;
+                        break;
+                    }
+                }
+            }
+
+            // FARM TILE LOGIC (only if nothing opened)
+            if (!opened)
+            {
+                Vector2 feet = new Vector2(
+                    player.Hitbox.X + player.Hitbox.Width / 2f,
+                    player.Hitbox.Y + player.Hitbox.Height / 2f
+                );
+
+                var tile = farm.GetTileAt(feet);
+                if (tile.HasValue)
+                {
+                    Item? harvested = farm.TryHarvest(tile.Value.col, tile.Value.row);
+                    if (harvested != null)
+                    {
+                        inventory.Add(harvested, 1);
+                    }
+                    else
+                    {
+                        Slot selected = inventory.Selected;
+                        if (selected.Item != null && selected.Item.IsPlantable)
+                        {
+                            if (farm.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
+                                inventory.RemoveOne(inventory.SelectedIndex);
+                        }
+                    }
                 }
             }
         }
-    }
-}
     }
 
     farm.Update(dt);
@@ -204,10 +231,12 @@ while (!WindowShouldClose())
         farm.Draw(playerFeet);
         foreach (var af in animalFarms) af.Draw();
         foreach (var f in factories) f.Draw();
+        foreach (var s in shops) s.Draw();
         player.Draw();
     EndMode2D();
 
     hotbar.Draw(1920, 1080);
+    hud.Draw(1920, 1080);
 
     foreach (var af in animalFarms)
     {
@@ -218,9 +247,13 @@ while (!WindowShouldClose())
     {
         f.DrawPopup(1920, 1080, inventory);
     }
-
+    foreach (var s in shops)
+    {
+        s.DrawPopup(1920, 1080, inventory);
+    }
     EndDrawing();
 }
+
 foreach (var tex in textures)
 {
     UnloadTexture(tex);

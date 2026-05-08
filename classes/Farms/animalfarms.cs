@@ -4,39 +4,23 @@ using static Raylib_cs.Raylib;
 
 namespace Game;
 
-public abstract class AnimalFarm
+public abstract class AnimalFarm : InteractableBuilding
 {
-    protected const int FrameSize = 48;
-    protected const float Scale = 4f;
-    protected const float DrawSize = FrameSize * Scale;  // 192
+    protected override int FrameWidth => 48;
+    protected override int FrameHeight => 48;
+    protected override float Scale => 4f;
 
-    public Vector2 Position { get; }
     public AnimalFarmState State { get; private set; } = AnimalFarmState.Hungry;
-    public bool IsPopupOpen { get; private set; }
-
     private float _waitTimer = 0f;
 
-    protected abstract Texture2D Sprite { get; }
     protected abstract float WaitTime { get; }
     protected abstract Item ProducedItem { get; }
     protected abstract Item FeedItem { get; }
-    protected abstract string Title { get; }
+    public override bool RequiresPurchase => true;
 
-    public Rectangle Hitbox => new Rectangle(Position.X, Position.Y, DrawSize, DrawSize);
+    protected AnimalFarm(Vector2 position) : base(position) { }
 
-    public Rectangle InteractZone => new Rectangle(
-        Position.X - 40,
-        Position.Y - 40,
-        DrawSize + 80,
-        DrawSize + 80
-    );
-
-    protected AnimalFarm(Vector2 position)
-    {
-        Position = position;
-    }
-
-    public void Update(float dt)
+    public override void Update(float dt)
     {
         if (State == AnimalFarmState.Waiting)
         {
@@ -49,54 +33,9 @@ public abstract class AnimalFarm
         }
     }
 
-    public bool CanPlayerInteract(Rectangle playerHitbox)
+    protected override void DrawPopupContent(int popupX, int popupY, int popupW, int popupH, Inventory inventory)
     {
-        return CheckCollisionRecs(playerHitbox, InteractZone);
-    }
-
-    public void OpenPopup() => IsPopupOpen = true;
-    public void ClosePopup() => IsPopupOpen = false;
-
-    public void Draw()
-    {
-        Rectangle src = new Rectangle(0, 0, FrameSize, FrameSize);
-        Rectangle dst = new Rectangle(Position.X, Position.Y, DrawSize, DrawSize);
-        DrawTexturePro(Sprite, src, dst, new Vector2(0, 0), 0f, Color.White);
-
-        DrawRectangleLinesEx(Hitbox, 2, Color.Red);  // debug
-    }
-
-    public void DrawPopup(int screenW, int screenH, Inventory inventory)
-    {
-        if (!IsPopupOpen) return;
-
-        // Dim background
-        DrawRectangle(0, 0, screenW, screenH, new Color(0, 0, 0, 120));
-
-        // Popup window
-        int popupW = 500;
-        int popupH = 300;
-        int popupX = (screenW - popupW) / 2;
-        int popupY = (screenH - popupH) / 2;
-        Rectangle popupRect = new Rectangle(popupX, popupY, popupW, popupH);
-
-        DrawRectangleRec(popupRect, new Color(50, 40, 30, 240));
-        DrawRectangleLinesEx(popupRect, 4, new Color(120, 90, 60, 255));
-
-        // Title
-        DrawText(Title, popupX + 24, popupY + 24, 28, Color.White);
-
-        // Close button
-        Rectangle closeBtn = new Rectangle(popupX + popupW - 44, popupY + 12, 32, 32);
-        DrawRectangleRec(closeBtn, new Color(150, 50, 50, 255));
-        DrawText("X", (int)closeBtn.X + 10, (int)closeBtn.Y + 6, 24, Color.White);
-        if (CheckCollisionPointRec(GetMousePosition(), closeBtn) && IsMouseButtonPressed(MouseButton.Left))
-        {
-            ClosePopup();
-            return;
-        }
-
-        // Feed counter (top-right under close button)
+        // Feed counter
         int feedCount = inventory.CountOf(FeedItem);
         DrawTexturePro(
             FeedItem.Icon,
@@ -138,7 +77,6 @@ public abstract class AnimalFarm
             Color.White
         );
 
-        // Click handling
         if (buttonEnabled
             && CheckCollisionPointRec(GetMousePosition(), buttonRect)
             && IsMouseButtonPressed(MouseButton.Left))
@@ -161,5 +99,3 @@ public abstract class AnimalFarm
         }
     }
 }
-
-

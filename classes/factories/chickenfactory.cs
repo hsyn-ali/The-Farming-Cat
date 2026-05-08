@@ -12,4 +12,6 @@ public class ChickenFactory : Factory
     protected override Item InputItem => RunTime.WheatHarvestedItem;
     protected override Item OutputItem => RunTime.ChickenFeedItem;
     protected override string Title => "Chicken Feed Factory";
+    public override int RequiredLevel => UnlockManager.ChickenLevel;  // 4
+    public override int PurchaseCost => 100;
 }

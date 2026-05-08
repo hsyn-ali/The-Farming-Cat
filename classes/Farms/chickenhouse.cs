@@ -12,4 +12,7 @@ public class ChickenHouse : AnimalFarm
     protected override Item ProducedItem => RunTime.EggItem;
     protected override Item FeedItem => RunTime.ChickenFeedItem;
     protected override string Title => "Chicken House";
+
+    public override int RequiredLevel => UnlockManager.ChickenLevel;  // 4
+    public override int PurchaseCost => 150;
 }

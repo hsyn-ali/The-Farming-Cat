@@ -12,4 +12,6 @@ public class CowFactory : Factory
     protected override Item InputItem => RunTime.CarrotHarvestedItem;
     protected override Item OutputItem => RunTime.CowFeedItem;
     protected override string Title => "Cow Feed Factory";
+    public override int RequiredLevel => UnlockManager.CowLevel;  // 6
+    public override int PurchaseCost => 200;
 }

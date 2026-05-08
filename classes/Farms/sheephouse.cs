@@ -12,4 +12,6 @@ public class SheepHouse : AnimalFarm
     protected override Item ProducedItem => RunTime.WoolItem;
     protected override Item FeedItem => RunTime.SheepFeedItem;
     protected override string Title => "Sheep House";
+    public override int RequiredLevel => UnlockManager.SheepLevel;  // 7
+    public override int PurchaseCost => 300;
 }

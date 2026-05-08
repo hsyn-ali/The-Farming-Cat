@@ -1,5 +1,4 @@
 using Raylib_cs;
-
 namespace Game;
 
 public static class RunTime
@@ -45,6 +44,11 @@ public static class RunTime
     public static Item CarrotHarvestedItem = null!;
     public static Item BeetrootHarvestedItem = null!;
 
+    //// Item definitions — harvested crops
+    public static Item WheatSeedItem;
+    public static Item CarrotSeedItem;
+    public static Item BeetrootSeedItem;
+
     // Item definitions — animal products
     public static Item EggItem = null!;
     public static Item MilkItem = null!;
@@ -59,4 +63,7 @@ public static class RunTime
     public static Texture2D ChickenFactory;
     public static Texture2D CowFactory;
     public static Texture2D SheepFactory;
+
+    //Shop
+    public static Texture2D ShopBuilding;
 }
