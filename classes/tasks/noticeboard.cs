@@ -53,6 +53,8 @@ public class NoticeBoard : InteractableBuilding
             available.Add(RunTime.WheatHarvestedItem);
         if (PlayerStats.Level >= UnlockManager.CarrotSeedLevel)
             available.Add(RunTime.CarrotHarvestedItem);
+        if (PlayerStats.Level >= UnlockManager.GoldenCarrotSeedLevel)
+            available.Add(RunTime.GoldenCarrotHarvestedItem);
         if (PlayerStats.Level >= UnlockManager.BeetrootSeedLevel)
             available.Add(RunTime.BeetrootHarvestedItem);
         if (PlayerStats.Level >= UnlockManager.ChickenLevel)

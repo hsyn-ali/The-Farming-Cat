@@ -8,10 +8,11 @@ public static class UnlockManager
     public const int BeetrootSeedLevel = 5;
     public const int CowLevel = 6;
     public const int SheepLevel = 7;
+    public const int GoldenCarrotSeedLevel = 8;
 
     public static bool IsShopUnlocked => PlayerStats.Level >= ShopLevel;
-
     public static bool IsCarrotSeedUnlocked => PlayerStats.Level >= CarrotSeedLevel;
+    public static bool IsGoldenCarrotSeedUnlocked => PlayerStats.Level >= GoldenCarrotSeedLevel;
     public static bool IsBeetrootSeedUnlocked => PlayerStats.Level >= BeetrootSeedLevel;
 
     public static bool IsChickenAvailable => PlayerStats.Level >= ChickenLevel;

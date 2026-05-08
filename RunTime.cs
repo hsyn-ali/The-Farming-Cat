@@ -13,16 +13,19 @@ public static class RunTime
     public static Texture2D WheatSeedIcon;
     public static Texture2D CarrotSeedIcon;
     public static Texture2D BeetrootSeedIcon;
+    public static Texture2D GoldenCarrotSeedIcon;
 
     // Planted spritesheets
     public static Texture2D WheatPlanted;
     public static Texture2D CarrotPlanted;
     public static Texture2D BeetrootPlanted;
+    public static Texture2D GoldenCarrotPlanted;
 
     // Harvested icons
     public static Texture2D WheatHarvestedIcon;
     public static Texture2D CarrotHarvestedIcon;
     public static Texture2D BeetrootHarvestedIcon;
+    public static Texture2D GoldenCarrotHarvestedIcon;
 
     // Animal farms
     public static Texture2D ChickenHouse;
@@ -43,11 +46,13 @@ public static class RunTime
     public static Item WheatHarvestedItem = null!;
     public static Item CarrotHarvestedItem = null!;
     public static Item BeetrootHarvestedItem = null!;
+    public static Item GoldenCarrotHarvestedItem = null!;
 
     //// Item definitions — harvested crops
     public static Item WheatSeedItem;
     public static Item CarrotSeedItem;
     public static Item BeetrootSeedItem;
+    public static Item GoldenCarrotSeedItem;
 
     // Item definitions — animal products
     public static Item EggItem = null!;
@@ -72,4 +77,7 @@ public static class RunTime
 
     //NoticeBoard
     public static Texture2D NoticeBoardSprite;
+
+    //Menu
+    public static Texture2D MenuBackground;
 }

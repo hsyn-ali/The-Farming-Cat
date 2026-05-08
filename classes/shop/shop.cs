@@ -42,6 +42,7 @@ public class Shop : InteractableBuilding
         new BuyEntry(RunTime.ChickenFeedItem, 10, UnlockManager.ChickenLevel),
         new BuyEntry(RunTime.CowFeedItem, 15, UnlockManager.CowLevel),
         new BuyEntry(RunTime.SheepFeedItem, 15, UnlockManager.SheepLevel),
+        new BuyEntry(RunTime.GoldenCarrotSeedItem, 50, UnlockManager.GoldenCarrotSeedLevel)
     };
 
     private List<SellEntry> GetSellableItems() => new()
@@ -52,6 +53,7 @@ public class Shop : InteractableBuilding
         new SellEntry(RunTime.EggItem, 20),
         new SellEntry(RunTime.MilkItem, 25),
         new SellEntry(RunTime.WoolItem, 25),
+        new SellEntry(RunTime.GoldenCarrotHarvestedItem, 60),
     };
 
     protected override void DrawPopupContent(int popupX, int popupY, int popupW, int popupH, Inventory inventory)

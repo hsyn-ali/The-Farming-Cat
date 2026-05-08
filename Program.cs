@@ -6,8 +6,9 @@ using Game;
 using static Raylib_cs.Raylib;
 
 InitWindow(1920, 1080, "Farm Game");
+SetExitKey(KeyboardKey.Null);
 ToggleFullscreen();
-SetTargetFPS(144);
+SetTargetFPS(60);
 
 List<Texture2D> textures = new List<Texture2D>();
 
@@ -21,21 +22,25 @@ Texture2D LoadTex(string path)
 // Player & UI
 RunTime.PlayerRun = LoadTex("resources/assets/player/player_run.png");
 RunTime.Hotbar = LoadTex("resources/assets/hotbar/hotbar.png");
+RunTime.MenuBackground = LoadTex("resources/assets/menu/menu_bg.png");
 
 // Seed icons
 RunTime.WheatSeedIcon = LoadTex("resources/assets/crops/wheet_seed.png");
 RunTime.CarrotSeedIcon = LoadTex("resources/assets/crops/carrot_seed.png");
 RunTime.BeetrootSeedIcon = LoadTex("resources/assets/crops/beetroot_seed.png");
+RunTime.GoldenCarrotSeedIcon = LoadTex("resources/assets/crops/goldencarrot_seed.png");
 
 // Planted spritesheets
 RunTime.WheatPlanted = LoadTex("resources/assets/crops/wheet_planted.png");
 RunTime.CarrotPlanted = LoadTex("resources/assets/crops/carrot_planted.png");
 RunTime.BeetrootPlanted = LoadTex("resources/assets/crops/beetroot_planted.png");
+RunTime.GoldenCarrotPlanted = LoadTex("resources/assets/crops/goldencarrot_planted.png");
 
 // Harvested icons
 RunTime.WheatHarvestedIcon = LoadTex("resources/assets/crops/wheet_harvested.png");
 RunTime.CarrotHarvestedIcon = LoadTex("resources/assets/crops/carrot_harvested.png");
 RunTime.BeetrootHarvestedIcon = LoadTex("resources/assets/crops/beetroot_harvested.png");
+RunTime.GoldenCarrotHarvestedIcon = LoadTex("resources/assets/crops/goldencarrot_harvested.png");
 
 // Animal farms
 RunTime.ChickenHouse = LoadTex("resources/assets/animal farms/chicken_house.png");
@@ -70,6 +75,7 @@ RunTime.NoticeBoardSprite = LoadTex("resources/assets/notice board/notice_board.
 RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5, sellPrice: 5);
 RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon, xpReward: 8, sellPrice: 10);
 RunTime.BeetrootHarvestedItem = new Item("Beetroot", RunTime.BeetrootHarvestedIcon, xpReward: 10, sellPrice: 15);
+RunTime.GoldenCarrotHarvestedItem = new Item("Golden Carrot", RunTime.GoldenCarrotHarvestedIcon, xpReward: 20, sellPrice: 60);
 
 RunTime.EggItem = new Item("Egg", RunTime.EggIcon, xpReward: 6, sellPrice: 20);
 RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon, xpReward: 15, sellPrice: 25);
@@ -83,6 +89,7 @@ RunTime.SheepFeedItem = new Item("Sheep Feed", RunTime.SheepFeedIcon, xpReward: 
 RunTime.WheatSeedItem = new Item("Wheat Seed", RunTime.WheatSeedIcon, createCrop: () => new WheatCrop());
 RunTime.CarrotSeedItem = new Item("Carrot Seed", RunTime.CarrotSeedIcon, createCrop: () => new CarrotCrop());
 RunTime.BeetrootSeedItem = new Item("Beetroot Seed", RunTime.BeetrootSeedIcon, createCrop: () => new BeetrootCrop());
+RunTime.GoldenCarrotSeedItem = new Item("Golden Carrot Seed", RunTime.GoldenCarrotSeedIcon, createCrop: () => new GoldenCarrotCrop());
 
 // World
 Map map = new Map("resources/assets/map/map.png");
@@ -122,15 +129,32 @@ List<InteractableBuilding> shops = new List<InteractableBuilding> { shop };
 Inventory inventory = new Inventory();
 inventory.Add(RunTime.WheatSeedItem, 10);
 inventory.Add(RunTime.WheatHarvestedItem,100);
+inventory.Add(RunTime.GoldenCarrotHarvestedItem,100);
 inventory.Add(RunTime.CarrotHarvestedItem,100);
 PlayerStats.AddCoins(50);
 
 Hotbar hotbar = new Hotbar(inventory);
 HUD hud = new HUD();
+Menu menu = new Menu();
+bool gameStarted = false;
 
 while (!WindowShouldClose())
 {
-    float dt = GetFrameTime();
+    if (!gameStarted)
+    {
+        menu.Update();
+
+        if (menu.ShouldQuit) break;
+        if (menu.ShouldStartGame) gameStarted = true;
+
+        BeginDrawing();
+        ClearBackground(Color.Black);
+        menu.Draw(1920, 1080);
+        EndDrawing();
+    }
+    else
+    {
+        float dt = GetFrameTime();
 
     // DEBUG keys — remove before submission
     if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
@@ -329,31 +353,32 @@ while (!WindowShouldClose())
     hotbar.Draw(1920, 1080);
     hud.Draw(1920, 1080);
 
-    foreach (var af in animalFarms)
+        foreach (var af in animalFarms)
+        {
+            af.DrawPopup(1920, 1080, inventory);
+        }
+
+        foreach (var f in factories)
+        {
+            f.DrawPopup(1920, 1080, inventory);
+        }
+        foreach (var s in shops)
+        {
+            s.DrawPopup(1920, 1080, inventory);
+        }
+
+        chest.DrawPopup(1920, 1080, inventory);
+        noticeBoard.DrawPopup(1920, 1080, inventory);
+        foreach (var f in farms) f.DrawPopup(1920, 1080);
+        EndDrawing();
+        }  
+    }       
+
+    foreach (var tex in textures)
     {
-        af.DrawPopup(1920, 1080, inventory);
+        UnloadTexture(tex);
     }
+    textures.Clear();
 
-    foreach (var f in factories)
-    {
-        f.DrawPopup(1920, 1080, inventory);
-    }
-    foreach (var s in shops)
-    {
-        s.DrawPopup(1920, 1080, inventory);
-    }
-
-    chest.DrawPopup(1920, 1080, inventory);
-    noticeBoard.DrawPopup(1920, 1080, inventory);
-    foreach (var f in farms) f.DrawPopup(1920, 1080);
-    EndDrawing();
-}
-
-foreach (var tex in textures)
-{
-    UnloadTexture(tex);
-}
-textures.Clear();
-
-map.Unload();
-CloseWindow();
+    map.Unload();
+    CloseWindow();
