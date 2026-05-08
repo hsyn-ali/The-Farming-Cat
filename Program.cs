@@ -88,7 +88,12 @@ RunTime.BeetrootSeedItem = new Item("Beetroot Seed", RunTime.BeetrootSeedIcon, c
 Map map = new Map("resources/assets/map/map.png");
 Player player = new Player(new Vector2(1140, 870));
 Camera camera = new Camera(player.Position, new Vector2(1920, 1080));
-Farm farm = new Farm(656, 1088);
+
+//farms
+Farm farm1 = new Farm(656, 1088);
+Farm farm2 = new Farm(1147, 1065, requiredLevel: 4, purchaseCost: 200);
+Farm farm3 = new Farm(1625, 1065, requiredLevel: 6, purchaseCost: 400);
+List<Farm> farms = new List<Farm> { farm1, farm2, farm3 };
 
 // Animal farms
 ChickenHouse chickenHouse = new ChickenHouse(new Vector2(1430, 575));
@@ -132,6 +137,7 @@ while (!WindowShouldClose())
     if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
 
     noticeBoard.Update(dt);
+    foreach (var f in farms) f.Update(dt);
     foreach (var af in animalFarms) af.Update(dt);
     foreach (var f in factories) f.Update(dt);
     foreach (var s in shops)s.Update(dt);
@@ -142,7 +148,8 @@ while (!WindowShouldClose())
         factories.Any(f => f.IsPopupOpen) ||
         shops.Any(s => s.IsPopupOpen) ||
         chest.IsPopupOpen ||
-        noticeBoard.IsPopupOpen;
+        noticeBoard.IsPopupOpen ||
+        farms.Any(f => f.IsPopupOpen);
 
     if (!anyPopupOpen)
     {
@@ -220,7 +227,7 @@ while (!WindowShouldClose())
                 opened = true;
             }
 
-            // FARM TILE LOGIC (only if nothing opened)
+            // FARM TILE LOGIC (only if nothing else opened)
             if (!opened)
             {
                 Vector2 feet = new Vector2(
@@ -228,29 +235,41 @@ while (!WindowShouldClose())
                     player.Hitbox.Y + player.Hitbox.Height / 2f
                 );
 
-                var tile = farm.GetTileAt(feet);
-                if (tile.HasValue)
+                foreach (var f in farms)
                 {
-                    Item? harvested = farm.TryHarvest(tile.Value.col, tile.Value.row);
-                    if (harvested != null)
+                    if (!f.ContainsPoint(feet)) continue;
+
+                    // Locked? Open the purchase popup
+                    if (!f.IsAvailable)
                     {
-                        inventory.Add(harvested, 1);
+                        f.OpenPopup();
+                        opened = true;
+                        break;
                     }
-                    else
+
+                    var tile = f.GetTileAt(feet);
+                    if (tile.HasValue)
                     {
-                        Slot selected = inventory.Selected;
-                        if (selected.Item != null && selected.Item.IsPlantable)
+                        Item? harvested = f.TryHarvest(tile.Value.col, tile.Value.row);
+                        if (harvested != null)
                         {
-                            if (farm.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
-                                inventory.RemoveOne(inventory.SelectedIndex);
+                            inventory.Add(harvested, 1);
+                        }
+                        else
+                        {
+                            Slot selected = inventory.Selected;
+                            if (selected.Item != null && selected.Item.IsPlantable)
+                            {
+                                if (f.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
+                                    inventory.RemoveOne(inventory.SelectedIndex);
+                            }
                         }
                     }
+                    break;
                 }
             }
         }
     }
-
-    farm.Update(dt);
 
     Vector2 playerFeet = new Vector2(
         player.Hitbox.X + player.Hitbox.Width / 2f,
@@ -262,7 +281,7 @@ while (!WindowShouldClose())
 
     BeginMode2D(camera.Raw);
         map.Draw();
-        farm.Draw(playerFeet);
+        foreach (var f in farms) f.Draw(playerFeet);
 
     InteractableBuilding target = null;
 
@@ -326,6 +345,7 @@ while (!WindowShouldClose())
 
     chest.DrawPopup(1920, 1080, inventory);
     noticeBoard.DrawPopup(1920, 1080, inventory);
+    foreach (var f in farms) f.DrawPopup(1920, 1080);
     EndDrawing();
 }
 
