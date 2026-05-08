@@ -69,4 +69,7 @@ public static class RunTime
 
     //Chest
     public static Texture2D ChestSprite;
+
+    //NoticeBoard
+    public static Texture2D NoticeBoardSprite;
 }

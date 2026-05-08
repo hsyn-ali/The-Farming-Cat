@@ -13,18 +13,23 @@ public class Item
     // XP earned when collecting/harvesting this item
     public int XpReward { get; }
 
+    // Coins received when selling this item (0 = not sellable)
+    public int SellPrice { get; }
+
     public Item(
         string name,
         Texture2D icon,
         int maxStack = 99,
         Func<Crop>? createCrop = null,
-        int xpReward = 0)
+        int xpReward = 0,
+        int sellPrice = 0)
     {
         Name = name;
         Icon = icon;
         MaxStack = maxStack;
         CreateCrop = createCrop;
         XpReward = xpReward;
+        SellPrice = sellPrice;
     }
 
     public bool IsPlantable => CreateCrop != null;

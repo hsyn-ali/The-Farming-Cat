@@ -63,14 +63,17 @@ RunTime.ShopBuilding = LoadTex("resources/assets/shop/shop.png");
 //chest 
 RunTime.ChestSprite = LoadTex("resources/assets/chest/chest.png");
 
-// Define harvested + animal product + feed items
-RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5);
-RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon, xpReward: 8);
-RunTime.BeetrootHarvestedItem = new Item("Beetroot", RunTime.BeetrootHarvestedIcon, xpReward: 10);
+//NoticeBoard
+RunTime.NoticeBoardSprite = LoadTex("resources/assets/notice board/notice_board.png");
 
-RunTime.EggItem = new Item("Egg", RunTime.EggIcon, xpReward: 6);
-RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon, xpReward: 15);
-RunTime.WoolItem = new Item("Wool", RunTime.WoolIcon, xpReward: 12);
+// Define harvested + animal product + feed items
+RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5, sellPrice: 5);
+RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon, xpReward: 8, sellPrice: 10);
+RunTime.BeetrootHarvestedItem = new Item("Beetroot", RunTime.BeetrootHarvestedIcon, xpReward: 10, sellPrice: 15);
+
+RunTime.EggItem = new Item("Egg", RunTime.EggIcon, xpReward: 6, sellPrice: 20);
+RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon, xpReward: 15, sellPrice: 25);
+RunTime.WoolItem = new Item("Wool", RunTime.WoolIcon, xpReward: 12, sellPrice: 25);
 
 RunTime.ChickenFeedItem = new Item("Chicken Feed", RunTime.ChickenFeedIcon, xpReward: 2);
 RunTime.CowFeedItem = new Item("Cow Feed", RunTime.CowFeedIcon, xpReward: 2);
@@ -103,6 +106,9 @@ Shop shop = new Shop(new Vector2(400, 1110));
 //chest
 Chest chest = new Chest(new Vector2(940, 850));
 
+//noticeBoard
+NoticeBoard noticeBoard = new NoticeBoard(new Vector2(1150, 805));  
+
 List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepFactory };
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };
 List<InteractableBuilding> shops = new List<InteractableBuilding> { shop };
@@ -110,6 +116,8 @@ List<InteractableBuilding> shops = new List<InteractableBuilding> { shop };
 // Inventory — start with wheat seeds only, plus a small coin pool
 Inventory inventory = new Inventory();
 inventory.Add(RunTime.WheatSeedItem, 10);
+inventory.Add(RunTime.WheatHarvestedItem,100);
+inventory.Add(RunTime.CarrotHarvestedItem,100);
 PlayerStats.AddCoins(50);
 
 Hotbar hotbar = new Hotbar(inventory);
@@ -123,6 +131,7 @@ while (!WindowShouldClose())
     if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
     if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
 
+    noticeBoard.Update(dt);
     foreach (var af in animalFarms) af.Update(dt);
     foreach (var f in factories) f.Update(dt);
     foreach (var s in shops)s.Update(dt);
@@ -132,7 +141,8 @@ while (!WindowShouldClose())
         animalFarms.Any(af => af.IsPopupOpen) ||
         factories.Any(f => f.IsPopupOpen) ||
         shops.Any(s => s.IsPopupOpen) ||
-        chest.IsPopupOpen;
+        chest.IsPopupOpen ||
+        noticeBoard.IsPopupOpen;
 
     if (!anyPopupOpen)
     {
@@ -148,6 +158,7 @@ while (!WindowShouldClose())
             obstacles.Add(s.Hitbox);
         
         obstacles.Add(chest.Hitbox);
+        obstacles.Add(noticeBoard.Hitbox);
 
         player.Update(dt, map.Width, map.Height, obstacles);
         camera.Follow(player.Position, map.Width, map.Height);
@@ -200,6 +211,12 @@ while (!WindowShouldClose())
             if (!opened && chest.CanPlayerInteract(player.Hitbox))
             {
                 chest.OpenPopup();
+                opened = true;
+            }
+
+            if (!opened && noticeBoard.CanPlayerInteract(player.Hitbox))
+            {
+                noticeBoard.OpenPopup();
                 opened = true;
             }
 
@@ -280,6 +297,11 @@ while (!WindowShouldClose())
     chest.Draw();
     if (target == null && chest.CanPlayerInteract(player.Hitbox))
         target = chest;
+    
+    //noticeBoard
+    noticeBoard.Draw();
+    if (target == null && noticeBoard.CanPlayerInteract(player.Hitbox))
+        target = noticeBoard;
 
     target?.DrawInteractionPrompt();    
         player.Draw();
@@ -303,6 +325,7 @@ while (!WindowShouldClose())
     }
 
     chest.DrawPopup(1920, 1080, inventory);
+    noticeBoard.DrawPopup(1920, 1080, inventory);
     EndDrawing();
 }
 
