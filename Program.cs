@@ -7,7 +7,7 @@ using static Raylib_cs.Raylib;
 
 InitWindow(1920, 1080, "Farm Game");
 ToggleFullscreen();
-SetTargetFPS(60);
+SetTargetFPS(144);
 
 List<Texture2D> textures = new List<Texture2D>();
 
@@ -61,17 +61,17 @@ RunTime.SheepFactory = LoadTex("resources/assets/factories/sheep_factory.png");
 RunTime.ShopBuilding = LoadTex("resources/assets/shop/shop.png");
 
 // Define harvested + animal product + feed items
-RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon);
-RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon);
-RunTime.BeetrootHarvestedItem = new Item("Beetroot", RunTime.BeetrootHarvestedIcon);
+RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5);
+RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon, xpReward: 8);
+RunTime.BeetrootHarvestedItem = new Item("Beetroot", RunTime.BeetrootHarvestedIcon, xpReward: 10);
 
-RunTime.EggItem = new Item("Egg", RunTime.EggIcon);
-RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon);
-RunTime.WoolItem = new Item("Wool", RunTime.WoolIcon);
+RunTime.EggItem = new Item("Egg", RunTime.EggIcon, xpReward: 6);
+RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon, xpReward: 15);
+RunTime.WoolItem = new Item("Wool", RunTime.WoolIcon, xpReward: 12);
 
-RunTime.ChickenFeedItem = new Item("Chicken Feed", RunTime.ChickenFeedIcon);
-RunTime.CowFeedItem = new Item("Cow Feed", RunTime.CowFeedIcon);
-RunTime.SheepFeedItem = new Item("Sheep Feed", RunTime.SheepFeedIcon);
+RunTime.ChickenFeedItem = new Item("Chicken Feed", RunTime.ChickenFeedIcon, xpReward: 2);
+RunTime.CowFeedItem = new Item("Cow Feed", RunTime.CowFeedIcon, xpReward: 2);
+RunTime.SheepFeedItem = new Item("Sheep Feed", RunTime.SheepFeedIcon, xpReward: 2);
 
 // Define seed items
 RunTime.WheatSeedItem = new Item("Wheat Seed", RunTime.WheatSeedIcon, createCrop: () => new WheatCrop());
@@ -85,9 +85,9 @@ Camera camera = new Camera(player.Position, new Vector2(1920, 1080));
 Farm farm = new Farm(656, 1088);
 
 // Animal farms
-ChickenHouse chickenHouse = new ChickenHouse(new Vector2(1430, 340));
-CowHouse cowHouse = new CowHouse(new Vector2(1640, 340));
-SheepHouse sheepHouse = new SheepHouse(new Vector2(1870, 340));
+ChickenHouse chickenHouse = new ChickenHouse(new Vector2(1430, 575));
+CowHouse cowHouse = new CowHouse(new Vector2(1640, 575));
+SheepHouse sheepHouse = new SheepHouse(new Vector2(1870, 575));
 
 // factories
 ChickenFactory chickenFactory = new ChickenFactory(new Vector2(150, 135));
@@ -95,7 +95,7 @@ CowFactory cowFactory = new CowFactory(new Vector2(315, 650));
 SheepFactory sheepFactory = new SheepFactory(new Vector2(550, 650));
 
 //shop
-Shop shop = new Shop(new Vector2(440, 1110)); 
+Shop shop = new Shop(new Vector2(400, 1110)); 
 
 List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepFactory };
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };

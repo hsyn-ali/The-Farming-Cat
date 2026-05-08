@@ -94,6 +94,7 @@ public abstract class Factory : InteractableBuilding
             else if (State == FactoryState.Done)
             {
                 inventory.Add(OutputItem, 1);
+                PlayerStats.AddXP(OutputItem.XpReward);
                 State = FactoryState.Idle;
             }
         }

@@ -49,10 +49,17 @@ public class Farm
     public Item? TryHarvest(int col, int row)
     {
         Crop? crop = _crops[col, row];
-        if (crop == null || !crop.IsFullyGrown) return null;
+
+        if (crop == null || !crop.IsFullyGrown)
+            return null;
 
         Item harvested = crop.HarvestedItem;
+
+        // Give XP based on harvested crop
+        PlayerStats.AddXP(harvested.XpReward);
+
         _crops[col, row] = null;
+
         return harvested;
     }
 

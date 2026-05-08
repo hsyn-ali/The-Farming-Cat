@@ -94,7 +94,9 @@ public abstract class AnimalFarm : InteractableBuilding
             else if (State == AnimalFarmState.Ready)
             {
                 inventory.Add(ProducedItem, 1);
+                PlayerStats.AddXP(ProducedItem.XpReward);
                 State = AnimalFarmState.Hungry;
+
             }
         }
     }

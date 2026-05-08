@@ -10,12 +10,21 @@ public class Item
     public int MaxStack { get; }
     public Func<Crop>? CreateCrop { get; }
 
-    public Item(string name, Texture2D icon, int maxStack = 99, Func<Crop>? createCrop = null)
+    // XP earned when collecting/harvesting this item
+    public int XpReward { get; }
+
+    public Item(
+        string name,
+        Texture2D icon,
+        int maxStack = 99,
+        Func<Crop>? createCrop = null,
+        int xpReward = 0)
     {
         Name = name;
         Icon = icon;
         MaxStack = maxStack;
         CreateCrop = createCrop;
+        XpReward = xpReward;
     }
 
     public bool IsPlantable => CreateCrop != null;

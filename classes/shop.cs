@@ -16,9 +16,9 @@ public class Shop : InteractableBuilding
     private readonly Dictionary<string, int> _sellQuantities = new();
 
     protected override Texture2D Sprite => RunTime.ShopBuilding;
-    protected override int FrameWidth => 96;
+    protected override int FrameWidth => 64;
     protected override int FrameHeight => 96;
-    protected override float Scale => 2f;
+    protected override float Scale => 3f;
     protected override string Title => "Shop";
 
     protected override int PopupWidth => 800;
