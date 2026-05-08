@@ -66,4 +66,7 @@ public static class RunTime
 
     //Shop
     public static Texture2D ShopBuilding;
+
+    //Chest
+    public static Texture2D ChestSprite;
 }

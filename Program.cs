@@ -60,6 +60,9 @@ RunTime.SheepFactory = LoadTex("resources/assets/factories/sheep_factory.png");
 //Shop
 RunTime.ShopBuilding = LoadTex("resources/assets/shop/shop.png");
 
+//chest 
+RunTime.ChestSprite = LoadTex("resources/assets/chest/chest.png");
+
 // Define harvested + animal product + feed items
 RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5);
 RunTime.CarrotHarvestedItem = new Item("Carrot", RunTime.CarrotHarvestedIcon, xpReward: 8);
@@ -86,8 +89,8 @@ Farm farm = new Farm(656, 1088);
 
 // Animal farms
 ChickenHouse chickenHouse = new ChickenHouse(new Vector2(1430, 575));
-CowHouse cowHouse = new CowHouse(new Vector2(1640, 575));
-SheepHouse sheepHouse = new SheepHouse(new Vector2(1870, 575));
+CowHouse cowHouse = new CowHouse(new Vector2(1665, 575));
+SheepHouse sheepHouse = new SheepHouse(new Vector2(1900, 575));
 
 // factories
 ChickenFactory chickenFactory = new ChickenFactory(new Vector2(150, 135));
@@ -95,7 +98,10 @@ CowFactory cowFactory = new CowFactory(new Vector2(315, 650));
 SheepFactory sheepFactory = new SheepFactory(new Vector2(550, 650));
 
 //shop
-Shop shop = new Shop(new Vector2(400, 1110)); 
+Shop shop = new Shop(new Vector2(400, 1110));
+
+//chest
+Chest chest = new Chest(new Vector2(940, 850));
 
 List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepFactory };
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };
@@ -120,11 +126,13 @@ while (!WindowShouldClose())
     foreach (var af in animalFarms) af.Update(dt);
     foreach (var f in factories) f.Update(dt);
     foreach (var s in shops)s.Update(dt);
+    chest.Update(dt);
     
     bool anyPopupOpen =
         animalFarms.Any(af => af.IsPopupOpen) ||
         factories.Any(f => f.IsPopupOpen) ||
-        shops.Any(s => s.IsPopupOpen);
+        shops.Any(s => s.IsPopupOpen) ||
+        chest.IsPopupOpen;
 
     if (!anyPopupOpen)
     {
@@ -138,6 +146,8 @@ while (!WindowShouldClose())
 
         foreach (var s in shops)
             obstacles.Add(s.Hitbox);
+        
+        obstacles.Add(chest.Hitbox);
 
         player.Update(dt, map.Width, map.Height, obstacles);
         camera.Follow(player.Position, map.Width, map.Height);
@@ -186,6 +196,13 @@ while (!WindowShouldClose())
                 }
             }
 
+            // CHEST
+            if (!opened && chest.CanPlayerInteract(player.Hitbox))
+            {
+                chest.OpenPopup();
+                opened = true;
+            }
+
             // FARM TILE LOGIC (only if nothing opened)
             if (!opened)
             {
@@ -229,9 +246,42 @@ while (!WindowShouldClose())
     BeginMode2D(camera.Raw);
         map.Draw();
         farm.Draw(playerFeet);
-        foreach (var af in animalFarms) af.Draw();
-        foreach (var f in factories) f.Draw();
-        foreach (var s in shops) s.Draw();
+
+    InteractableBuilding target = null;
+
+    // ANIMAL FARMS
+    foreach (var af in animalFarms)
+    {
+        af.Draw();
+
+        if (target == null && af.CanPlayerInteract(player.Hitbox))
+            target = af;
+    }
+
+    // FACTORIES
+    foreach (var f in factories)
+    {
+        f.Draw();
+
+        if (target == null && f.CanPlayerInteract(player.Hitbox))
+            target = f;
+    }
+
+    // SHOPS
+    foreach (var s in shops)
+    {
+        s.Draw();
+
+        if (target == null && s.CanPlayerInteract(player.Hitbox))
+            target = s;
+    }
+
+    // CHEST
+    chest.Draw();
+    if (target == null && chest.CanPlayerInteract(player.Hitbox))
+        target = chest;
+
+    target?.DrawInteractionPrompt();    
         player.Draw();
     EndMode2D();
 
@@ -251,6 +301,8 @@ while (!WindowShouldClose())
     {
         s.DrawPopup(1920, 1080, inventory);
     }
+
+    chest.DrawPopup(1920, 1080, inventory);
     EndDrawing();
 }
 

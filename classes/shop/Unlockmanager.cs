@@ -2,7 +2,6 @@ namespace Game;
 
 public static class UnlockManager
 {
-    // Level gates for buildings/features
     public const int ShopLevel = 2;
     public const int CarrotSeedLevel = 3;
     public const int ChickenLevel = 4;

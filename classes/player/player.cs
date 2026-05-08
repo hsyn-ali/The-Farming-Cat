@@ -27,9 +27,9 @@ public class Player
     }
 
     public Rectangle Hitbox => new Rectangle(
-        Position.X + FrameWidth * Scale * 0.33f,
-        Position.Y + FrameHeight * Scale * 0.3f,
-        FrameWidth * Scale * 0.33f,
+        Position.X + FrameWidth * Scale * 0.4f,
+        Position.Y + FrameHeight * Scale * 0.4f,
+        FrameWidth * Scale * 0.2f,
         FrameHeight * Scale * 0.4f
     );
 

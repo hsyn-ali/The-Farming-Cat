@@ -6,14 +6,15 @@ namespace Game;
 
 public class Inventory
 {
-    public const int SlotCount = 8;
-
-    public Slot[] Slots { get; } = new Slot[SlotCount];
+    public int SlotCount { get; }
+    public Slot[] Slots { get; }
     public int SelectedIndex { get; set; } = 0;
 
-    public Inventory()
+    public Inventory(int slotCount = 8)
     {
-        for (int i = 0; i < SlotCount; i++)
+        SlotCount = slotCount;
+        Slots = new Slot[slotCount];
+        for (int i = 0; i < slotCount; i++)
             Slots[i] = new Slot();
     }
 
@@ -47,19 +48,18 @@ public class Inventory
     }
 
     public void RemoveOne(int slotIndex)
-{
-    Slot slot = Slots[slotIndex];
-    if (slot.Item == null) return;
-
-    slot.Count--;
-    if (slot.Count <= 0)
     {
-        slot.Item = null;
-        slot.Count = 0;
-    }
-}
+        Slot slot = Slots[slotIndex];
+        if (slot.Item == null) return;
 
-// Total amount of this item across all slots
+        slot.Count--;
+        if (slot.Count <= 0)
+        {
+            slot.Item = null;
+            slot.Count = 0;
+        }
+    }
+
     public int CountOf(Item item)
     {
         int total = 0;
@@ -68,7 +68,6 @@ public class Inventory
         return total;
     }
 
-    // Returns the index of the first slot containing this item, or -1
     public int FindSlotWith(Item item)
     {
         for (int i = 0; i < SlotCount; i++)
@@ -87,7 +86,7 @@ public class Slot
 
 public class Hotbar
 {
-    private const int SlotSize = 96;       // 32 source × 3 scale
+    private const int SlotSize = 96;
     private const int BottomMargin = 20;
 
     private readonly Inventory _inventory;
@@ -99,79 +98,75 @@ public class Hotbar
 
     public void Update()
     {
-        for (int i = 0; i < Inventory.SlotCount; i++)
+        for (int i = 0; i < _inventory.SlotCount; i++)
         {
             if (IsKeyPressed(KeyboardKey.One + i))
                 _inventory.SelectedIndex = i;
         }
     }
 
- public void Draw(int screenWidth, int screenHeight)
-{
-    int totalWidth = Inventory.SlotCount * SlotSize;
-    int startX = (screenWidth - totalWidth) / 2;
-    int y = screenHeight - SlotSize - BottomMargin;
-
-    // Draw the whole hotbar sprite once, scaled
-    DrawTexturePro(
-        RunTime.Hotbar,
-        new Rectangle(0, 0, RunTime.Hotbar.Width, RunTime.Hotbar.Height),
-        new Rectangle(startX, y, totalWidth, SlotSize),
-        new Vector2(0, 0),
-        0f,
-        Color.White
-    );
-
-    // Draw items + selection on top, slot by slot
-    for (int i = 0; i < Inventory.SlotCount; i++)
+    public void Draw(int screenWidth, int screenHeight)
     {
-        int x = startX + i * SlotSize;
-        Rectangle slotRect = new Rectangle(x, y, SlotSize, SlotSize);
+        int totalWidth = _inventory.SlotCount * SlotSize;
+        int startX = (screenWidth - totalWidth) / 2;
+        int y = screenHeight - SlotSize - BottomMargin;
 
-        Slot slot = _inventory.Slots[i];
-        if (slot.Item != null)
-        {
-            DrawTexturePro(
-                slot.Item.Icon,
-                new Rectangle(0, 0, slot.Item.Icon.Width, slot.Item.Icon.Height),
-                slotRect,
-                new Vector2(0, 0),
-                0f,
-                Color.White
-            );
-
-            if (slot.Count > 1)
-            {
-                string countText = slot.Count.ToString();
-                DrawText(countText, x + SlotSize - 22, y + SlotSize - 22, 20, Color.White);
-            }
-        }
-
-        if (i == _inventory.SelectedIndex)
-            DrawRectangleLinesEx(slotRect, 4, Color.Yellow);
-    }
-
-    // Selected item name, centered above the hotbar
-    Slot selected = _inventory.Selected;
-    if (selected.Item != null)
-    {
-        int fontSize = 24;
-        int textWidth = MeasureText(selected.Item.Name, fontSize);
-
-        int textX = (screenWidth - textWidth) / 2;
-        int textY = y - fontSize - 10;
-
-        // Subtle dark background behind the text for readability
-        int padding = 10;
-        DrawRectangle(
-            textX - padding,
-            textY - 4,
-            textWidth + padding * 2,
-            fontSize + 8,
-            new Color(0, 0, 0, 150)
+        DrawTexturePro(
+            RunTime.Hotbar,
+            new Rectangle(0, 0, RunTime.Hotbar.Width, RunTime.Hotbar.Height),
+            new Rectangle(startX, y, totalWidth, SlotSize),
+            new Vector2(0, 0),
+            0f,
+            Color.White
         );
 
-        DrawText(selected.Item.Name, textX, textY, fontSize, Color.White);
+        for (int i = 0; i < _inventory.SlotCount; i++)
+        {
+            int x = startX + i * SlotSize;
+            Rectangle slotRect = new Rectangle(x, y, SlotSize, SlotSize);
+
+            Slot slot = _inventory.Slots[i];
+            if (slot.Item != null)
+            {
+                DrawTexturePro(
+                    slot.Item.Icon,
+                    new Rectangle(0, 0, slot.Item.Icon.Width, slot.Item.Icon.Height),
+                    slotRect,
+                    new Vector2(0, 0),
+                    0f,
+                    Color.White
+                );
+
+                if (slot.Count > 1)
+                {
+                    string countText = slot.Count.ToString();
+                    DrawText(countText, x + SlotSize - 22, y + SlotSize - 22, 20, Color.White);
+                }
+            }
+
+            if (i == _inventory.SelectedIndex)
+                DrawRectangleLinesEx(slotRect, 4, Color.Yellow);
+        }
+
+        Slot selected = _inventory.Selected;
+        if (selected.Item != null)
+        {
+            int fontSize = 24;
+            int textWidth = MeasureText(selected.Item.Name, fontSize);
+
+            int textX = (screenWidth - textWidth) / 2;
+            int textY = y - fontSize - 10;
+
+            int padding = 10;
+            DrawRectangle(
+                textX - padding,
+                textY - 4,
+                textWidth + padding * 2,
+                fontSize + 8,
+                new Color(0, 0, 0, 150)
+            );
+
+            DrawText(selected.Item.Name, textX, textY, fontSize, Color.White);
+        }
     }
-}
 }

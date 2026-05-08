@@ -61,7 +61,32 @@ public abstract class InteractableBuilding
         Rectangle dst = new Rectangle(Position.X, Position.Y, DrawWidth, DrawHeight);
         DrawTexturePro(Sprite, src, dst, new Vector2(0, 0), 0f, tint);
 
-        DrawRectangleLinesEx(Hitbox, 2, Color.Red);  // debug
+        //DrawRectangleLinesEx(Hitbox, 2, Color.Red);  // debug
+    }
+
+    public void DrawInteractionPrompt()
+    {
+        string text = "Press E";
+
+        int fontSize = 24;
+        int textWidth = MeasureText(text, fontSize);
+
+        float textX =
+            Position.X +
+            DrawWidth / 2f -
+            textWidth / 2f;
+
+        float textY = Position.Y - 35;
+
+        DrawRectangle(
+            (int)textX - 10,
+            (int)textY - 5,
+            textWidth + 20,
+            34,
+            new Color(0, 0, 0, 180)
+        );
+
+        DrawText(text, (int)textX, (int)textY, fontSize, Color.White);
     }
 
     public void DrawPopup(int screenW, int screenH, Inventory inventory)
