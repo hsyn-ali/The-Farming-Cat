@@ -1,4 +1,5 @@
 using System.Numerics;
+using Raylib_cs;
 
 namespace Game;
 
@@ -10,7 +11,7 @@ public abstract class AnimalFarm : ProductionBuilding
 
     protected abstract Item ProducedItem { get; }
     protected abstract Item FeedItem { get; }
-
+    public abstract Sound CollectSound { get; }
     protected override Item InputItem => FeedItem;
     protected override Item OutputItem => ProducedItem;
 

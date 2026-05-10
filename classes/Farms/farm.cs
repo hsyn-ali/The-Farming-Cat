@@ -147,6 +147,7 @@ public class Farm
         DrawText("X", (int)closeBtn.X + 10, (int)closeBtn.Y + 6, 24, Color.White);
         if (CheckCollisionPointRec(GetMousePosition(), closeBtn) && IsMouseButtonPressed(MouseButton.Left))
         {
+            SoundManager.Play(RunTime.ClickSound);
             ClosePopup();
             return;
         }
@@ -198,6 +199,7 @@ public class Farm
             if (PlayerStats.SpendCoins(PurchaseCost))
             {
                 IsBought = true;
+                SoundManager.Play(RunTime.BuySellSound);
                 ClosePopup();
             }
         }

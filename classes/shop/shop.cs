@@ -177,6 +177,7 @@ public class Shop : InteractableBuilding
                 if (PlayerStats.SpendCoins(totalPrice))
                 {
                     inventory.Add(entry.Item, qty);
+                    SoundManager.Play(RunTime.BuySellSound);
                 }
             }
         }
@@ -254,6 +255,7 @@ public class Shop : InteractableBuilding
                     inventory.RemoveOne(slot);
                 }
                 PlayerStats.AddCoins(totalPrice);
+                SoundManager.Play(RunTime.BuySellSound);
                 _sellQuantities[entry.Item.Name] = 1;
             }
         }

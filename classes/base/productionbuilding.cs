@@ -126,6 +126,11 @@ public abstract class ProductionBuilding : InteractableBuilding
             {
                 inventory.Add(OutputItem, _pendingQty);
                 PlayerStats.AddXP(OutputItem.XpReward * _pendingQty);
+
+                // Play animal-specific sound if this is an animal farm
+                if (this is AnimalFarm af)
+                    SoundManager.Play(af.CollectSound);
+
                 State = ProductionState.WaitingForInput;
                 _pendingQty = 1;
             }

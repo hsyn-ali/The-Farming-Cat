@@ -6,7 +6,7 @@ using Game;
 using static Raylib_cs.Raylib;
 
 InitWindow(1920, 1080, "Farm Game");
-SetExitKey(KeyboardKey.Null);
+//SetExitKey(KeyboardKey.Null);
 ToggleFullscreen();
 SetTargetFPS(60);
 
@@ -70,6 +70,7 @@ RunTime.ChestSprite = LoadTex("resources/assets/chest/chest.png");
 
 //NoticeBoard
 RunTime.NoticeBoardSprite = LoadTex("resources/assets/notice board/notice_board.png");
+SoundManager.LoadAll();
 
 // Define harvested + animal product + feed items
 RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5, sellPrice: 5);
@@ -140,6 +141,7 @@ bool gameStarted = false;
 
 while (!WindowShouldClose())
 {
+    SoundManager.Update();
     if (!gameStarted)
     {
         menu.Update();
@@ -205,6 +207,7 @@ while (!WindowShouldClose())
                 if (af.CanPlayerInteract(player.Hitbox))
                 {
                     af.OpenPopup();
+                    SoundManager.Play(RunTime.PopupSound);
                     opened = true;
                     break;
                 }
@@ -218,6 +221,7 @@ while (!WindowShouldClose())
                     if (f.CanPlayerInteract(player.Hitbox))
                     {
                         f.OpenPopup();
+                        SoundManager.Play(RunTime.PopupSound);
                         opened = true;
                         break;
                     }
@@ -232,6 +236,7 @@ while (!WindowShouldClose())
                     if (s.CanPlayerInteract(player.Hitbox))
                     {
                         s.OpenPopup();
+                        SoundManager.Play(RunTime.PopupSound);
                         opened = true;
                         break;
                     }
@@ -242,12 +247,14 @@ while (!WindowShouldClose())
             if (!opened && chest.CanPlayerInteract(player.Hitbox))
             {
                 chest.OpenPopup();
+                SoundManager.Play(RunTime.PopupSound);
                 opened = true;
             }
 
             if (!opened && noticeBoard.CanPlayerInteract(player.Hitbox))
             {
                 noticeBoard.OpenPopup();
+                SoundManager.Play(RunTime.PopupSound);
                 opened = true;
             }
 
@@ -267,6 +274,7 @@ while (!WindowShouldClose())
                     if (!f.IsAvailable)
                     {
                         f.OpenPopup();
+                        SoundManager.Play(RunTime.PopupSound);
                         opened = true;
                         break;
                     }
@@ -278,6 +286,7 @@ while (!WindowShouldClose())
                         if (harvested != null)
                         {
                             inventory.Add(harvested, 1);
+                            SoundManager.Play(RunTime.HarvestSound);
                         }
                         else
                         {
@@ -285,7 +294,10 @@ while (!WindowShouldClose())
                             if (selected.Item != null && selected.Item.IsPlantable)
                             {
                                 if (f.TryPlant(tile.Value.col, tile.Value.row, selected.Item))
+                                {
                                     inventory.RemoveOne(inventory.SelectedIndex);
+                                    SoundManager.Play(RunTime.PlantSound);
+                                }
                             }
                         }
                     }
@@ -381,4 +393,5 @@ while (!WindowShouldClose())
     textures.Clear();
 
     map.Unload();
+    SoundManager.UnloadAll();
     CloseWindow();

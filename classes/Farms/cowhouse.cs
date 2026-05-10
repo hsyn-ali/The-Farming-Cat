@@ -12,6 +12,7 @@ public class CowHouse : AnimalFarm
     protected override Item ProducedItem => RunTime.MilkItem;
     protected override Item FeedItem => RunTime.CowFeedItem;
     protected override string Title => "Cow House";
+    public override Sound CollectSound => RunTime.CowSound;
     public override int RequiredLevel => UnlockManager.CowLevel;  // 6
     public override int PurchaseCost => 300;
 }

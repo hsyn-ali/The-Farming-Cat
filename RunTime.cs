@@ -80,4 +80,15 @@ public static class RunTime
 
     //Menu
     public static Texture2D MenuBackground;
+
+    //sounds
+    public static Sound PopupSound;
+    public static Sound ClickSound;
+    public static Sound PlantSound;
+    public static Sound HarvestSound;
+    public static Sound BuySellSound;
+    public static Sound ChickenSound;
+    public static Sound CowSound;
+    public static Sound SheepSound;
+    public static Music BackgroundMusic;
 }
