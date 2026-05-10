@@ -96,6 +96,6 @@ public class Player
         Rectangle dst = new Rectangle(Position.X, Position.Y, FrameWidth * Scale, FrameHeight * Scale);
         DrawTexturePro(RunTime.PlayerRun, src, dst, new Vector2(0f, 0f), 0f, Color.White);
 
-        DrawRectangleLinesEx(Hitbox, 2, Color.Red);
+        //DrawRectangleLinesEx(Hitbox, 2, Color.Red); //debug
     }
 }

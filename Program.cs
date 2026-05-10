@@ -97,6 +97,32 @@ Map map = new Map("resources/assets/map/map.png");
 Player player = new Player(new Vector2(1140, 870));
 Camera camera = new Camera(player.Position, new Vector2(1920, 1080));
 
+// Map collision zones (water, walls, cliffs, out-of-bounds areas)
+List<Rectangle> mapBoundaries = new List<Rectangle>
+{
+    new Rectangle(880, 133, 1144, 100),   
+    new Rectangle(1480, 230, 571, 330),
+    new Rectangle(2050, 160, 100, 2000),
+    new Rectangle(200, 1550, 2000, 100),
+    new Rectangle(0, 515, 450, 100),
+    new Rectangle(228, 557, 100, 1000),
+    new Rectangle(0, 0, 50, 1000),
+    new Rectangle(0, 38, 1000, 100),
+    new Rectangle(440, 80, 1000, 100),
+    new Rectangle(440, 170, 135, 80),
+    new Rectangle(440, 350, 135, 80),
+    new Rectangle(440, 450, 120, 80),
+    new Rectangle(336, 515, 137, 76),
+    new Rectangle(426, 535, 100, 30),
+    new Rectangle(392, 547, 92, 36),
+    new Rectangle(576, 400, 93, 60),
+    new Rectangle(861, 480, 36, 392), //house left wall
+    new Rectangle(862, 802, 207, 70), //house bottom left
+    new Rectangle(1109, 802, 204, 70), //house bottom right
+    new Rectangle(1277, 480, 36, 392), //right wall
+    new Rectangle(861, 480, 452, 77), //house top wall
+};
+
 //farms
 Farm farm1 = new Farm(656, 1088);
 Farm farm2 = new Farm(1147, 1065, requiredLevel: 4, purchaseCost: 200);
@@ -192,7 +218,7 @@ while (!WindowShouldClose())
         
         obstacles.Add(chest.Hitbox);
         obstacles.Add(noticeBoard.Hitbox);
-
+        obstacles.AddRange(mapBoundaries);
         player.Update(dt, map.Width, map.Height, obstacles);
         camera.Follow(player.Position, map.Width, map.Height);
         hotbar.Update();
@@ -318,6 +344,12 @@ while (!WindowShouldClose())
     BeginMode2D(camera.Raw);
         map.Draw();
         foreach (var f in farms) f.Draw(playerFeet);
+        // DEBUG: visualize map boundaries — remove before submission
+        /*foreach (var r in mapBoundaries)
+        {
+            DrawRectangleRec(r, new Color(255, 0, 0, 100));
+            DrawRectangleLinesEx(r, 2, Color.Red);
+        }*/
 
     InteractableBuilding target = null;
 
@@ -364,7 +396,7 @@ while (!WindowShouldClose())
 
     hotbar.Draw(1920, 1080);
     hud.Draw(1920, 1080);
-
+    DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White);
         foreach (var af in animalFarms)
         {
             af.DrawPopup(1920, 1080, inventory);
