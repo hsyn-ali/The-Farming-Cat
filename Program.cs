@@ -129,24 +129,18 @@ Farm farm2 = new Farm(1147, 1065, requiredLevel: 4, purchaseCost: 200);
 Farm farm3 = new Farm(1625, 1065, requiredLevel: 6, purchaseCost: 400);
 List<Farm> farms = new List<Farm> { farm1, farm2, farm3 };
 
-// Animal farms
-ChickenHouse chickenHouse = new ChickenHouse(new Vector2(1430, 575));
-CowHouse cowHouse = new CowHouse(new Vector2(1665, 575));
-SheepHouse sheepHouse = new SheepHouse(new Vector2(1900, 575));
+// Buildings created via Factory Pattern
+ChickenHouse chickenHouse = (ChickenHouse)BuildingFactory.Create("ChickenHouse", new Vector2(1430, 575));
+CowHouse cowHouse = (CowHouse)BuildingFactory.Create("CowHouse", new Vector2(1665, 575));
+SheepHouse sheepHouse = (SheepHouse)BuildingFactory.Create("SheepHouse", new Vector2(1900, 575));
 
-// factories
-ChickenFactory chickenFactory = new ChickenFactory(new Vector2(150, 135));
-CowFactory cowFactory = new CowFactory(new Vector2(315, 650));
-SheepFactory sheepFactory = new SheepFactory(new Vector2(550, 650));
+ChickenFactory chickenFactory = (ChickenFactory)BuildingFactory.Create("ChickenFactory", new Vector2(150, 135));
+CowFactory cowFactory = (CowFactory)BuildingFactory.Create("CowFactory", new Vector2(315, 650));
+SheepFactory sheepFactory = (SheepFactory)BuildingFactory.Create("SheepFactory", new Vector2(550, 650));
 
-//shop
-Shop shop = new Shop(new Vector2(400, 1110));
-
-//chest
-Chest chest = new Chest(new Vector2(940, 850));
-
-//noticeBoard
-NoticeBoard noticeBoard = new NoticeBoard(new Vector2(1150, 805));  
+Shop shop = (Shop)BuildingFactory.Create("Shop", new Vector2(400, 1110));
+Chest chest = (Chest)BuildingFactory.Create("Chest", new Vector2(940, 850));
+NoticeBoard noticeBoard = (NoticeBoard)BuildingFactory.Create("NoticeBoard", new Vector2(1150, 805));
 
 List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepFactory };
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };
@@ -222,6 +216,7 @@ while (!WindowShouldClose())
         player.Update(dt, map.Width, map.Height, obstacles);
         camera.Follow(player.Position, map.Width, map.Height);
         hotbar.Update();
+        hud.Update(dt);
 
         if (IsKeyPressed(KeyboardKey.E))
         {
@@ -396,7 +391,7 @@ while (!WindowShouldClose())
 
     hotbar.Draw(1920, 1080);
     hud.Draw(1920, 1080);
-    DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White);
+    DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White); //debug
         foreach (var af in animalFarms)
         {
             af.DrawPopup(1920, 1080, inventory);
