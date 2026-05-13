@@ -14,5 +14,5 @@ public class SheepHouse : AnimalFarm
     protected override string Title => "Sheep House";
     public override Sound CollectSound => RunTime.SheepSound;
     public override int RequiredLevel => UnlockManager.SheepLevel;  // 7
-    public override int PurchaseCost => 300;
+    public override int PurchaseCost => 400;
 }
