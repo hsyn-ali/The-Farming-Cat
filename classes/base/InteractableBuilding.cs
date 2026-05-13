@@ -61,7 +61,7 @@ public abstract class InteractableBuilding
         Rectangle dst = new Rectangle(Position.X, Position.Y, DrawWidth, DrawHeight);
         DrawTexturePro(Sprite, src, dst, new Vector2(0, 0), 0f, tint);
 
-        DrawRectangleLinesEx(Hitbox, 2, Color.Red);  // debug
+        //DrawRectangleLinesEx(Hitbox, 2, Color.Red);  // debug
     }
 
     public void DrawInteractionPrompt()

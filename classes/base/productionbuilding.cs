@@ -3,9 +3,6 @@ using System.Numerics;
 using static Raylib_cs.Raylib;
 
 namespace Game;
-
-public enum ProductionState { WaitingForInput, Processing, Ready }
-
 public abstract class ProductionBuilding : InteractableBuilding
 {
     public ProductionState State { get; private set; } = ProductionState.WaitingForInput;
