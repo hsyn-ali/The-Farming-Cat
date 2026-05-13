@@ -15,5 +15,5 @@ public class ChickenHouse : AnimalFarm
     public override Sound CollectSound => RunTime.ChickenSound;
 
     public override int RequiredLevel => UnlockManager.ChickenLevel;  // 4
-    public override int PurchaseCost => 150;
+    public override int PurchaseCost => 200;
 }

@@ -102,7 +102,7 @@ public class Farm
             return;
         }
 
-        DrawRectangleLinesEx(Area, 2, Color.Yellow); //debug
+        //DrawRectangleLinesEx(Area, 2, Color.Yellow); //debug
 
         for (int c = 0; c < Cols; c++)
         {

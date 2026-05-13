@@ -32,7 +32,6 @@ public class Shop : InteractableBuilding
     public override void Update(float dt) { }
 
     private record BuyEntry(Item Item, int Price, int RequiredLevel);
-    private record SellEntry(Item Item, int Price);
 
     private List<BuyEntry> GetBuyableItems() => new()
     {
@@ -41,19 +40,19 @@ public class Shop : InteractableBuilding
         new BuyEntry(RunTime.BeetrootSeedItem, 12, UnlockManager.BeetrootSeedLevel),
         new BuyEntry(RunTime.ChickenFeedItem, 10, UnlockManager.ChickenLevel),
         new BuyEntry(RunTime.CowFeedItem, 15, UnlockManager.CowLevel),
-        new BuyEntry(RunTime.SheepFeedItem, 15, UnlockManager.SheepLevel),
+        new BuyEntry(RunTime.SheepFeedItem, 20, UnlockManager.SheepLevel),
         new BuyEntry(RunTime.GoldenCarrotSeedItem, 50, UnlockManager.GoldenCarrotSeedLevel)
     };
 
-    private List<SellEntry> GetSellableItems() => new()
+    private List<Item> GetSellableItems() => new()
     {
-        new SellEntry(RunTime.WheatHarvestedItem, 5),
-        new SellEntry(RunTime.CarrotHarvestedItem, 10),
-        new SellEntry(RunTime.BeetrootHarvestedItem, 15),
-        new SellEntry(RunTime.EggItem, 20),
-        new SellEntry(RunTime.MilkItem, 25),
-        new SellEntry(RunTime.WoolItem, 25),
-        new SellEntry(RunTime.GoldenCarrotHarvestedItem, 60),
+        RunTime.WheatHarvestedItem,
+        RunTime.CarrotHarvestedItem,
+        RunTime.BeetrootHarvestedItem,
+        RunTime.EggItem,
+        RunTime.MilkItem,
+        RunTime.WoolItem,
+        RunTime.GoldenCarrotHarvestedItem,
     };
 
     protected override void DrawPopupContent(int popupX, int popupY, int popupW, int popupH, Inventory inventory)
@@ -188,21 +187,21 @@ public class Shop : InteractableBuilding
         var items = GetSellableItems();
         for (int i = 0; i < items.Count; i++)
         {
-            var entry = items[i];
+            var item = items[i];
             int rowY = y + i * rowHeight;
-            int owned = inventory.CountOf(entry.Item);
+            int owned = inventory.CountOf(item);
 
-            if (!_sellQuantities.ContainsKey(entry.Item.Name))
-                _sellQuantities[entry.Item.Name] = 1;
+            if (!_sellQuantities.ContainsKey(item.Name))
+                _sellQuantities[item.Name] = 1;
 
-            int qty = System.Math.Min(_sellQuantities[entry.Item.Name], System.Math.Max(1, owned));
-            _sellQuantities[entry.Item.Name] = qty;
-            int totalPrice = qty * entry.Price;
+            int qty = System.Math.Min(_sellQuantities[item.Name], System.Math.Max(1, owned));
+            _sellQuantities[item.Name] = qty;
+            int totalPrice = qty * item.SellPrice;
 
             // Icon
             DrawTexturePro(
-                entry.Item.Icon,
-                new Rectangle(0, 0, entry.Item.Icon.Width, entry.Item.Icon.Height),
+                item.Icon,
+                new Rectangle(0, 0, item.Icon.Width, item.Icon.Height),
                 new Rectangle(x, rowY, 40, 40),
                 new Vector2(0, 0), 0f,
                 owned > 0 ? Color.White : new Color(120, 120, 120, 200)
@@ -210,8 +209,8 @@ public class Shop : InteractableBuilding
 
             // Name + owned + price
             Color textColor = owned > 0 ? Color.White : Color.Gray;
-            DrawText($"{entry.Item.Name} (x{owned})", x + 50, rowY + 4, 18, textColor);
-            DrawText($"{entry.Price} coins each", x + 50, rowY + 24, 14, Color.LightGray);
+            DrawText($"{item.Name} (x{owned})", x + 50, rowY + 4, 18, textColor);
+            DrawText($"{item.SellPrice} coins each", x + 50, rowY + 24, 14, Color.LightGray);
 
             if (owned == 0) continue;
 
@@ -229,9 +228,9 @@ public class Shop : InteractableBuilding
             DrawText("+", (int)plusBtn.X + 9, (int)plusBtn.Y + 4, 24, Color.White);
 
             if (CheckCollisionPointRec(GetMousePosition(), minusBtn) && IsMouseButtonPressed(MouseButton.Left))
-                _sellQuantities[entry.Item.Name] = System.Math.Max(1, qty - 1);
+                _sellQuantities[item.Name] = System.Math.Max(1, qty - 1);
             if (CheckCollisionPointRec(GetMousePosition(), plusBtn) && IsMouseButtonPressed(MouseButton.Left))
-                _sellQuantities[entry.Item.Name] = System.Math.Min(owned, qty + 1);
+                _sellQuantities[item.Name] = System.Math.Min(owned, qty + 1);
 
             // Sell button
             Rectangle sellBtn = new Rectangle(controlsX + 110, rowY + 4, 110, 32);
@@ -250,13 +249,13 @@ public class Shop : InteractableBuilding
                 // Remove items
                 for (int q = 0; q < qty; q++)
                 {
-                    int slot = inventory.FindSlotWith(entry.Item);
+                    int slot = inventory.FindSlotWith(item);
                     if (slot < 0) break;
                     inventory.RemoveOne(slot);
                 }
                 PlayerStats.AddCoins(totalPrice);
                 SoundManager.Play(RunTime.BuySellSound);
-                _sellQuantities[entry.Item.Name] = 1;
+                _sellQuantities[item.Name] = 1;
             }
         }
     }

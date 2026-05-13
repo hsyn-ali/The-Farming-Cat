@@ -79,8 +79,8 @@ RunTime.BeetrootHarvestedItem = new Item("Beetroot", RunTime.BeetrootHarvestedIc
 RunTime.GoldenCarrotHarvestedItem = new Item("Golden Carrot", RunTime.GoldenCarrotHarvestedIcon, xpReward: 20, sellPrice: 60);
 
 RunTime.EggItem = new Item("Egg", RunTime.EggIcon, xpReward: 6, sellPrice: 20);
-RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon, xpReward: 15, sellPrice: 25);
-RunTime.WoolItem = new Item("Wool", RunTime.WoolIcon, xpReward: 12, sellPrice: 25);
+RunTime.MilkItem = new Item("Milk", RunTime.MilkIcon, xpReward: 12, sellPrice: 25);
+RunTime.WoolItem = new Item("Wool", RunTime.WoolIcon, xpReward: 15, sellPrice: 30);
 
 RunTime.ChickenFeedItem = new Item("Chicken Feed", RunTime.ChickenFeedIcon, xpReward: 2);
 RunTime.CowFeedItem = new Item("Cow Feed", RunTime.CowFeedIcon, xpReward: 2);
@@ -148,11 +148,11 @@ List<InteractableBuilding> shops = new List<InteractableBuilding> { shop };
 
 // Inventory — start with wheat seeds only, plus a small coin pool
 Inventory inventory = new Inventory();
-inventory.Add(RunTime.WheatSeedItem, 10);
-inventory.Add(RunTime.WheatHarvestedItem,100);
+inventory.Add(RunTime.WheatSeedItem, 20);
+/*inventory.Add(RunTime.WheatHarvestedItem,100);
 inventory.Add(RunTime.GoldenCarrotHarvestedItem,100);
 inventory.Add(RunTime.CarrotHarvestedItem,100);
-PlayerStats.AddCoins(50);
+PlayerStats.AddCoins(50);*/
 
 Hotbar hotbar = new Hotbar(inventory);
 HUD hud = new HUD();
@@ -178,9 +178,9 @@ while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
 
-    // DEBUG keys — remove before submission
-    if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
-    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
+    // DEBUG keys
+    /*if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
+    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);*/
 
     noticeBoard.Update(dt);
     foreach (var f in farms) f.Update(dt);
@@ -391,7 +391,7 @@ while (!WindowShouldClose())
 
     hotbar.Draw(1920, 1080);
     hud.Draw(1920, 1080);
-    DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White); //debug
+    //DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White); //debug
         foreach (var af in animalFarms)
         {
             af.DrawPopup(1920, 1080, inventory);
