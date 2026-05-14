@@ -184,9 +184,9 @@ while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
 
-    /* DEBUG keys — remove before submission
+    // DEBUG keys — remove before submission
     if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
-    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);*/
+    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
 
     noticeBoard.Update(dt);
     foreach (var f in farms) f.Update(dt);

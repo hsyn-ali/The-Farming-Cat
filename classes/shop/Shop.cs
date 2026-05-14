@@ -7,255 +7,159 @@ namespace Game;
 
 public class Shop : InteractableBuilding
 {
-    private enum Tab { Buy, Sell }
-    private Tab _activeTab = Tab.Buy;
-
-    // Per-item buy quantities (keyed by item name)
-    private readonly Dictionary<string, int> _buyQuantities = new();
-    // Per-item sell quantities (keyed by item name)
-    private readonly Dictionary<string, int> _sellQuantities = new();
+    private bool _buyTab = true;
+    private readonly Dictionary<string, int> _qty = new();
 
     protected override Texture2D Sprite => RunTime.ShopBuilding;
     protected override int FrameWidth => 64;
     protected override int FrameHeight => 96;
     protected override float Scale => 3f;
     protected override string Title => "Shop";
-
     protected override int PopupWidth => 800;
     protected override int PopupHeight => 550;
 
-    public override int RequiredLevel => UnlockManager.ShopLevel;  // 2
+    public override int RequiredLevel => UnlockManager.ShopLevel;
     public override bool RequiresPurchase => false;
 
     public Shop(Vector2 position) : base(position) { }
-
     public override void Update(float dt) { }
 
-    private record BuyEntry(Item Item, int Price, int RequiredLevel);
-
-    private List<BuyEntry> GetBuyableItems() => new()
+    protected override void DrawPopupContent(int px, int py, int pw, int ph, Inventory inventory)
     {
-        new BuyEntry(RunTime.WheatSeedItem, 3, 1),
-        new BuyEntry(RunTime.CarrotSeedItem, 8, UnlockManager.CarrotSeedLevel),
-        new BuyEntry(RunTime.BeetrootSeedItem, 12, UnlockManager.BeetrootSeedLevel),
-        new BuyEntry(RunTime.ChickenFeedItem, 10, UnlockManager.ChickenLevel),
-        new BuyEntry(RunTime.CowFeedItem, 15, UnlockManager.CowLevel),
-        new BuyEntry(RunTime.SheepFeedItem, 20, UnlockManager.SheepLevel),
-        new BuyEntry(RunTime.GoldenCarrotSeedItem, 50, UnlockManager.GoldenCarrotSeedLevel)
-    };
+        var mouse = GetMousePosition();
+        bool click = IsMouseButtonPressed(MouseButton.Left);
 
-    private List<Item> GetSellableItems() => new()
-    {
-        RunTime.WheatHarvestedItem,
-        RunTime.CarrotHarvestedItem,
-        RunTime.BeetrootHarvestedItem,
-        RunTime.EggItem,
-        RunTime.MilkItem,
-        RunTime.WoolItem,
-        RunTime.GoldenCarrotHarvestedItem,
-    };
+        // Coins (top right)
+        string coins = $"{PlayerStats.Coins} coins";
+        DrawText(coins, px + pw - MeasureText(coins, 22) - 60, py + 30, 22, Color.Yellow);
 
-    protected override void DrawPopupContent(int popupX, int popupY, int popupW, int popupH, Inventory inventory)
-    {
-        // Coin display top-right
-        string coinText = $"{PlayerStats.Coins} coins";
-        int coinTextWidth = MeasureText(coinText, 22);
-        DrawText(coinText, popupX + popupW - coinTextWidth - 60, popupY + 30, 22, Color.Yellow);
+        // Buy tab
+        var buyTab = new Rectangle(px + 24, py + 70, 120, 40);
+        DrawRectangleRec(buyTab, _buyTab ? new Color(120, 90, 60, 255) : new Color(70, 55, 40, 255));
+        DrawRectangleLinesEx(buyTab, 2, Color.White);
+        DrawText("Buy", (int)buyTab.X + (120 - MeasureText("Buy", 22)) / 2, (int)buyTab.Y + 10, 22, Color.White);
+        if (CheckCollisionPointRec(mouse, buyTab) && click) _buyTab = true;
 
-        // Tab buttons
-        int tabY = popupY + 70;
-        int tabHeight = 40;
-        int tabWidth = 120;
+        // Sell tab
+        var sellTab = new Rectangle(px + 152, py + 70, 120, 40);
+        DrawRectangleRec(sellTab, !_buyTab ? new Color(120, 90, 60, 255) : new Color(70, 55, 40, 255));
+        DrawRectangleLinesEx(sellTab, 2, Color.White);
+        DrawText("Sell", (int)sellTab.X + (120 - MeasureText("Sell", 22)) / 2, (int)sellTab.Y + 10, 22, Color.White);
+        if (CheckCollisionPointRec(mouse, sellTab) && click) _buyTab = false;
 
-        Rectangle buyTab = new Rectangle(popupX + 24, tabY, tabWidth, tabHeight);
-        Rectangle sellTab = new Rectangle(popupX + 24 + tabWidth + 8, tabY, tabWidth, tabHeight);
+        // Build rows for active tab
+        // Each row: (Item, price, requiredLevel, maxQty)
+        // For buy: price = item price, max = int.MaxValue
+        // For sell: price = sell price, max = owned count, requiredLevel = 1 if owned > 0 else -1
+        var rows = new List<(Item item, int price, int reqLevel, int max, bool isBuy)>();
 
-        DrawTab(buyTab, "Buy", _activeTab == Tab.Buy);
-        DrawTab(sellTab, "Sell", _activeTab == Tab.Sell);
-
-        if (CheckCollisionPointRec(GetMousePosition(), buyTab) && IsMouseButtonPressed(MouseButton.Left))
-            _activeTab = Tab.Buy;
-        if (CheckCollisionPointRec(GetMousePosition(), sellTab) && IsMouseButtonPressed(MouseButton.Left))
-            _activeTab = Tab.Sell;
-
-        // Content area
-        int contentX = popupX + 24;
-        int contentY = tabY + tabHeight + 16;
-        int rowHeight = 56;
-
-        if (_activeTab == Tab.Buy)
-            DrawBuyTab(contentX, contentY, popupW - 48, rowHeight, inventory);
-        else
-            DrawSellTab(contentX, contentY, popupW - 48, rowHeight, inventory);
-    }
-
-    private void DrawTab(Rectangle rect, string label, bool active)
-    {
-        Color bg = active ? new Color(120, 90, 60, 255) : new Color(70, 55, 40, 255);
-        DrawRectangleRec(rect, bg);
-        DrawRectangleLinesEx(rect, 2, Color.White);
-        int textWidth = MeasureText(label, 22);
-        DrawText(label,
-            (int)(rect.X + (rect.Width - textWidth) / 2),
-            (int)(rect.Y + 10),
-            22, Color.White);
-    }
-
-    private void DrawBuyTab(int x, int y, int width, int rowHeight, Inventory inventory)
-    {
-        var items = GetBuyableItems();
-        for (int i = 0; i < items.Count; i++)
+        if (_buyTab)
         {
-            var entry = items[i];
-            int rowY = y + i * rowHeight;
-            bool levelOk = PlayerStats.Level >= entry.RequiredLevel;
+            rows.Add((RunTime.WheatSeedItem, 3, 1, int.MaxValue, true));
+            rows.Add((RunTime.CarrotSeedItem, 8, UnlockManager.CarrotSeedLevel, int.MaxValue, true));
+            rows.Add((RunTime.BeetrootSeedItem, 12, UnlockManager.BeetrootSeedLevel, int.MaxValue, true));
+            rows.Add((RunTime.ChickenFeedItem, 10, UnlockManager.ChickenLevel, int.MaxValue, true));
+            rows.Add((RunTime.CowFeedItem, 15, UnlockManager.CowLevel, int.MaxValue, true));
+            rows.Add((RunTime.SheepFeedItem, 20, UnlockManager.SheepLevel, int.MaxValue, true));
+            rows.Add((RunTime.GoldenCarrotSeedItem, 50, UnlockManager.GoldenCarrotSeedLevel, int.MaxValue, true));
+        }
+        else
+        {
+            Item[] sellables = {
+                RunTime.WheatHarvestedItem, RunTime.CarrotHarvestedItem, RunTime.BeetrootHarvestedItem,
+                RunTime.EggItem, RunTime.MilkItem, RunTime.WoolItem, RunTime.GoldenCarrotHarvestedItem,
+            };
+            foreach (var item in sellables)
+                rows.Add((item, item.SellPrice, 1, inventory.CountOf(item), false));
+        }
 
-            if (!_buyQuantities.ContainsKey(entry.Item.Name))
-                _buyQuantities[entry.Item.Name] = 1;
+        // Draw rows
+        int x = px + 24;
+        int w = pw - 48;
+        int baseY = py + 70 + 56;
 
-            int qty = _buyQuantities[entry.Item.Name];
-            int totalPrice = qty * entry.Price;
+        for (int i = 0; i < rows.Count; i++)
+        {
+            var (item, price, reqLevel, max, isBuy) = rows[i];
+            int y = baseY + i * 56;
+            bool available = isBuy ? PlayerStats.Level >= reqLevel : max > 0;
 
             // Icon
-            DrawTexturePro(
-                entry.Item.Icon,
-                new Rectangle(0, 0, entry.Item.Icon.Width, entry.Item.Icon.Height),
-                new Rectangle(x, rowY, 40, 40),
-                new Vector2(0, 0), 0f,
-                levelOk ? Color.White : new Color(120, 120, 120, 200)
-            );
+            DrawTexturePro(item.Icon,
+                new Rectangle(0, 0, item.Icon.Width, item.Icon.Height),
+                new Rectangle(x, y, 40, 40),
+                Vector2.Zero, 0f,
+                available ? Color.White : new Color(120, 120, 120, 200));
 
             // Name + price
-            Color textColor = levelOk ? Color.White : Color.Gray;
-            DrawText(entry.Item.Name, x + 50, rowY + 4, 18, textColor);
-            DrawText($"{entry.Price} coins each", x + 50, rowY + 24, 14, Color.LightGray);
+            string name = isBuy ? item.Name : $"{item.Name} (x{max})";
+            DrawText(name, x + 50, y + 4, 18, available ? Color.White : Color.Gray);
+            DrawText($"{price} coins each", x + 50, y + 24, 14, Color.LightGray);
 
-            if (!levelOk)
+            // Locked: show requirement and skip controls
+            if (isBuy && !available)
             {
-                DrawText($"Requires Level {entry.RequiredLevel}",
-                    x + width - 200, rowY + 12, 18, new Color(220, 100, 100, 255));
+                DrawText($"Requires Level {reqLevel}", x + w - 200, y + 12, 18, new Color(220, 100, 100, 255));
                 continue;
             }
+            if (!isBuy && max == 0) continue;
+
+            // Init / clamp quantity
+            if (!_qty.ContainsKey(item.Name)) _qty[item.Name] = 1;
+            _qty[item.Name] = System.Math.Clamp(_qty[item.Name], 1, max);
+            int qty = _qty[item.Name];
+            int total = qty * price;
 
             // Quantity controls
-            int controlsX = x + width - 240;
-            Rectangle minusBtn = new Rectangle(controlsX, rowY + 4, 32, 32);
-            Rectangle plusBtn = new Rectangle(controlsX + 70, rowY + 4, 32, 32);
+            int ctrlX = x + w - 240;
+            var minusBtn = new Rectangle(ctrlX, y + 4, 32, 32);
+            var plusBtn = new Rectangle(ctrlX + 70, y + 4, 32, 32);
 
             DrawRectangleRec(minusBtn, new Color(80, 80, 80, 255));
             DrawText("-", (int)minusBtn.X + 11, (int)minusBtn.Y + 4, 24, Color.White);
-
-            DrawText($"{qty}", controlsX + 42, rowY + 8, 22, Color.White);
-
+            DrawText($"{qty}", ctrlX + 42, y + 8, 22, Color.White);
             DrawRectangleRec(plusBtn, new Color(80, 80, 80, 255));
             DrawText("+", (int)plusBtn.X + 9, (int)plusBtn.Y + 4, 24, Color.White);
 
-            if (CheckCollisionPointRec(GetMousePosition(), minusBtn) && IsMouseButtonPressed(MouseButton.Left))
-                _buyQuantities[entry.Item.Name] = System.Math.Max(1, qty - 1);
-            if (CheckCollisionPointRec(GetMousePosition(), plusBtn) && IsMouseButtonPressed(MouseButton.Left))
-                _buyQuantities[entry.Item.Name] = qty + 1;
+            if (CheckCollisionPointRec(mouse, minusBtn) && click)
+                _qty[item.Name] = System.Math.Max(1, qty - 1);
+            if (CheckCollisionPointRec(mouse, plusBtn) && click)
+                _qty[item.Name] = System.Math.Min(max, qty + 1);
 
-            // Buy button
-            bool canAfford = PlayerStats.Coins >= totalPrice;
-            Rectangle buyBtn = new Rectangle(controlsX + 110, rowY + 4, 110, 32);
-            Color buyColor = canAfford ? new Color(80, 140, 60, 255) : new Color(70, 70, 70, 255);
-            DrawRectangleRec(buyBtn, buyColor);
-            DrawRectangleLinesEx(buyBtn, 1, Color.White);
+            // Action button
+            bool canAfford = !isBuy || PlayerStats.Coins >= total;
+            var actionBtn = new Rectangle(ctrlX + 110, y + 4, 110, 32);
+            Color btnColor = isBuy
+                ? (canAfford ? new Color(80, 140, 60, 255) : new Color(70, 70, 70, 255))
+                : new Color(180, 130, 50, 255);
+            DrawRectangleRec(actionBtn, btnColor);
+            DrawRectangleLinesEx(actionBtn, 1, Color.White);
 
-            string buyLabel = $"Buy ({totalPrice})";
-            int buyTextWidth = MeasureText(buyLabel, 16);
-            DrawText(buyLabel,
-                (int)(buyBtn.X + (buyBtn.Width - buyTextWidth) / 2),
-                (int)(buyBtn.Y + 8),
-                16, Color.White);
+            string label = isBuy ? $"Buy ({total})" : $"Sell (+{total})";
+            DrawText(label,
+                (int)(actionBtn.X + (actionBtn.Width - MeasureText(label, 16)) / 2),
+                (int)(actionBtn.Y + 8), 16, Color.White);
 
-            if (canAfford
-                && CheckCollisionPointRec(GetMousePosition(), buyBtn)
-                && IsMouseButtonPressed(MouseButton.Left))
+            // Handle click
+            if (CheckCollisionPointRec(mouse, actionBtn) && click)
             {
-                if (PlayerStats.SpendCoins(totalPrice))
+                if (isBuy && canAfford && PlayerStats.SpendCoins(total))
                 {
-                    inventory.Add(entry.Item, qty);
+                    inventory.Add(item, qty);
                     SoundManager.Play(RunTime.BuySellSound);
                 }
-            }
-        }
-    }
-
-    private void DrawSellTab(int x, int y, int width, int rowHeight, Inventory inventory)
-    {
-        var items = GetSellableItems();
-        for (int i = 0; i < items.Count; i++)
-        {
-            var item = items[i];
-            int rowY = y + i * rowHeight;
-            int owned = inventory.CountOf(item);
-
-            if (!_sellQuantities.ContainsKey(item.Name))
-                _sellQuantities[item.Name] = 1;
-
-            int qty = System.Math.Min(_sellQuantities[item.Name], System.Math.Max(1, owned));
-            _sellQuantities[item.Name] = qty;
-            int totalPrice = qty * item.SellPrice;
-
-            // Icon
-            DrawTexturePro(
-                item.Icon,
-                new Rectangle(0, 0, item.Icon.Width, item.Icon.Height),
-                new Rectangle(x, rowY, 40, 40),
-                new Vector2(0, 0), 0f,
-                owned > 0 ? Color.White : new Color(120, 120, 120, 200)
-            );
-
-            // Name + owned + price
-            Color textColor = owned > 0 ? Color.White : Color.Gray;
-            DrawText($"{item.Name} (x{owned})", x + 50, rowY + 4, 18, textColor);
-            DrawText($"{item.SellPrice} coins each", x + 50, rowY + 24, 14, Color.LightGray);
-
-            if (owned == 0) continue;
-
-            // Quantity controls
-            int controlsX = x + width - 240;
-            Rectangle minusBtn = new Rectangle(controlsX, rowY + 4, 32, 32);
-            Rectangle plusBtn = new Rectangle(controlsX + 70, rowY + 4, 32, 32);
-
-            DrawRectangleRec(minusBtn, new Color(80, 80, 80, 255));
-            DrawText("-", (int)minusBtn.X + 11, (int)minusBtn.Y + 4, 24, Color.White);
-
-            DrawText($"{qty}", controlsX + 42, rowY + 8, 22, Color.White);
-
-            DrawRectangleRec(plusBtn, new Color(80, 80, 80, 255));
-            DrawText("+", (int)plusBtn.X + 9, (int)plusBtn.Y + 4, 24, Color.White);
-
-            if (CheckCollisionPointRec(GetMousePosition(), minusBtn) && IsMouseButtonPressed(MouseButton.Left))
-                _sellQuantities[item.Name] = System.Math.Max(1, qty - 1);
-            if (CheckCollisionPointRec(GetMousePosition(), plusBtn) && IsMouseButtonPressed(MouseButton.Left))
-                _sellQuantities[item.Name] = System.Math.Min(owned, qty + 1);
-
-            // Sell button
-            Rectangle sellBtn = new Rectangle(controlsX + 110, rowY + 4, 110, 32);
-            DrawRectangleRec(sellBtn, new Color(180, 130, 50, 255));
-            DrawRectangleLinesEx(sellBtn, 1, Color.White);
-
-            string sellLabel = $"Sell (+{totalPrice})";
-            int sellTextWidth = MeasureText(sellLabel, 16);
-            DrawText(sellLabel,
-                (int)(sellBtn.X + (sellBtn.Width - sellTextWidth) / 2),
-                (int)(sellBtn.Y + 8),
-                16, Color.White);
-
-            if (CheckCollisionPointRec(GetMousePosition(), sellBtn) && IsMouseButtonPressed(MouseButton.Left))
-            {
-                // Remove items
-                for (int q = 0; q < qty; q++)
+                else if (!isBuy)
                 {
-                    int slot = inventory.FindSlotWith(item);
-                    if (slot < 0) break;
-                    inventory.RemoveOne(slot);
+                    for (int q = 0; q < qty; q++)
+                    {
+                        int slot = inventory.FindSlotWith(item);
+                        if (slot < 0) break;
+                        inventory.RemoveOne(slot);
+                    }
+                    PlayerStats.AddCoins(total);
+                    SoundManager.Play(RunTime.BuySellSound);
+                    _qty[item.Name] = 1;
                 }
-                PlayerStats.AddCoins(totalPrice);
-                SoundManager.Play(RunTime.BuySellSound);
-                _sellQuantities[item.Name] = 1;
             }
         }
     }
