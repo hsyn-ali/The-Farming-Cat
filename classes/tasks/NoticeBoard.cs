@@ -8,12 +8,14 @@ namespace Game;
 
 public class NoticeBoard : InteractableBuilding
 {
-    private const float OrderRefreshTime = 5f; 
+    private const float OrderRefreshTime = 5f;
 
-    private record OrderItem(Item Item, int Quantity);
-    private record Order(List<OrderItem> Items, int CoinReward, int XpReward);
+    // Current order: parallel lists. Empty when no order is active.
+    private readonly List<Item> _orderItems = new();
+    private readonly List<int> _orderQuantities = new();
+    private int _coinReward = 0;
+    private int _xpReward = 0;
 
-    private Order? _currentOrder;
     private float _timeUntilNewOrder = 0f;
     private readonly Random _random = new();
 
@@ -36,7 +38,7 @@ public class NoticeBoard : InteractableBuilding
 
     public override void Update(float dt)
     {
-        if (_currentOrder == null)
+        if (_orderItems.Count == 0)
         {
             _timeUntilNewOrder -= dt;
             if (_timeUntilNewOrder <= 0f)
@@ -46,6 +48,12 @@ public class NoticeBoard : InteractableBuilding
 
     private void GenerateNewOrder()
     {
+        // Clear previous order
+        _orderItems.Clear();
+        _orderQuantities.Clear();
+        _coinReward = 0;
+        _xpReward = 0;
+
         // Build the list of items the player has unlocked
         List<Item> available = new();
 
@@ -66,50 +74,40 @@ public class NoticeBoard : InteractableBuilding
 
         if (available.Count == 0)
         {
-            _currentOrder = null;
             _timeUntilNewOrder = OrderRefreshTime;
             return;
         }
 
         // Pick how many items in this order — 1, 2, or 3 (capped by what's unlocked)
-        int desiredItemCount = _random.Next(1, 4); // 1..3
-        int itemCount = System.Math.Min(desiredItemCount, available.Count);
+        int itemCount = System.Math.Min(_random.Next(1, 4), available.Count);
 
-        // Pick unique items by shuffling and taking the first N
-        List<Item> shuffled = new(available);
-        for (int i = shuffled.Count - 1; i > 0; i--)
+        // Shuffle so picks are unique
+        for (int i = available.Count - 1; i > 0; i--)
         {
             int swap = _random.Next(i + 1);
-            (shuffled[i], shuffled[swap]) = (shuffled[swap], shuffled[i]);
+            (available[i], available[swap]) = (available[swap], available[i]);
         }
 
-        List<OrderItem> orderItems = new();
-        int totalCoins = 0;
-        int totalXp = 0;
-
+        // Take first N items, give each a random quantity 1..10
         for (int i = 0; i < itemCount; i++)
         {
-            Item chosen = shuffled[i];
-            int qty = _random.Next(1, 11); // 1..10 inclusive
-            orderItems.Add(new OrderItem(chosen, qty));
-            totalCoins += chosen.SellPrice * qty;
-            totalXp += chosen.XpReward * qty;
+            Item chosen = available[i];
+            int qty = _random.Next(1, 11);
+            _orderItems.Add(chosen);
+            _orderQuantities.Add(qty);
+            _coinReward += chosen.SellPrice * qty;
+            _xpReward += chosen.XpReward * qty;
         }
 
-        // Bonus scales with number of items: 1 -> +20/+25, 2 -> +35/+40, 3 -> +50/+55
-        int coinBonus = 20 + (itemCount - 1) * 15;
-        int xpBonus = 25 + (itemCount - 1) * 15;
-
-        totalCoins += coinBonus;
-        totalXp += xpBonus;
-
-        _currentOrder = new Order(orderItems, totalCoins, totalXp);
+        // Bonus scales with number of items
+        _coinReward += 20 + (itemCount - 1) * 15;
+        _xpReward += 25 + (itemCount - 1) * 15;
     }
 
     protected override void DrawPopupContent(int popupX, int popupY, int popupW, int popupH, Inventory inventory)
     {
         // No order yet (waiting for next refresh)
-        if (_currentOrder == null)
+        if (_orderItems.Count == 0)
         {
             string waitText = $"Next order in: {_timeUntilNewOrder:F0}s";
             int waitWidth = MeasureText(waitText, 24);
@@ -120,8 +118,6 @@ public class NoticeBoard : InteractableBuilding
             return;
         }
 
-        var order = _currentOrder;
-
         // Header
         DrawText("Today's Order:", popupX + 24, popupY + 80, 22, Color.White);
 
@@ -130,22 +126,22 @@ public class NoticeBoard : InteractableBuilding
         int rowHeight = 64;
 
         bool canComplete = true;
-        for (int i = 0; i < order.Items.Count; i++)
+        for (int i = 0; i < _orderItems.Count; i++)
         {
-            var orderItem = order.Items[i];
+            Item item = _orderItems[i];
+            int qty = _orderQuantities[i];
             int rowY = rowStartY + i * rowHeight;
 
             DrawTexturePro(
-                orderItem.Item.Icon,
-                new Rectangle(0, 0, orderItem.Item.Icon.Width, orderItem.Item.Icon.Height),
+                item.Icon,
+                new Rectangle(0, 0, item.Icon.Width, item.Icon.Height),
                 new Rectangle(popupX + 24, rowY, 48, 48),
                 new Vector2(0, 0), 0f, Color.White
             );
-            DrawText($"{orderItem.Quantity}x {orderItem.Item.Name}",
-                popupX + 90, rowY + 4, 22, Color.White);
+            DrawText($"{qty}x {item.Name}", popupX + 90, rowY + 4, 22, Color.White);
 
-            int owned = inventory.CountOf(orderItem.Item);
-            bool itemMet = owned >= orderItem.Quantity;
+            int owned = inventory.CountOf(item);
+            bool itemMet = owned >= qty;
             if (!itemMet) canComplete = false;
 
             Color ownedColor = itemMet
@@ -155,8 +151,8 @@ public class NoticeBoard : InteractableBuilding
         }
 
         // Reward
-        int rewardY = rowStartY + order.Items.Count * rowHeight + 16;
-        DrawText($"Reward: {order.CoinReward} coins + {order.XpReward} XP",
+        int rewardY = rowStartY + _orderItems.Count * rowHeight + 16;
+        DrawText($"Reward: {_coinReward} coins + {_xpReward} XP",
             popupX + 24, rewardY, 20, Color.Yellow);
 
         // Complete button
@@ -184,21 +180,26 @@ public class NoticeBoard : InteractableBuilding
             && IsMouseButtonPressed(MouseButton.Left))
         {
             // Consume all items
-            foreach (var orderItem in order.Items)
+            for (int i = 0; i < _orderItems.Count; i++)
             {
-                for (int i = 0; i < orderItem.Quantity; i++)
+                Item item = _orderItems[i];
+                int qty = _orderQuantities[i];
+                for (int n = 0; n < qty; n++)
                 {
-                    int slot = inventory.FindSlotWith(orderItem.Item);
+                    int slot = inventory.FindSlotWith(item);
                     if (slot >= 0) inventory.RemoveOne(slot);
                 }
             }
 
             // Grant rewards
-            PlayerStats.AddCoins(order.CoinReward);
-            PlayerStats.AddXP(order.XpReward);
+            PlayerStats.AddCoins(_coinReward);
+            PlayerStats.AddXP(_xpReward);
 
             // Reset for next order
-            _currentOrder = null;
+            _orderItems.Clear();
+            _orderQuantities.Clear();
+            _coinReward = 0;
+            _xpReward = 0;
             _timeUntilNewOrder = OrderRefreshTime;
         }
     }
