@@ -71,6 +71,7 @@ RunTime.ChestSprite = LoadTex("resources/assets/chest/chest.png");
 //NoticeBoard
 RunTime.NoticeBoardSprite = LoadTex("resources/assets/notice board/notice_board.png");
 SoundManager.LoadAll();
+AchievementManager.Initialize();
 
 // Define harvested + animal product + feed items
 RunTime.WheatHarvestedItem = new Item("Wheat", RunTime.WheatHarvestedIcon, xpReward: 5, sellPrice: 5);
@@ -179,8 +180,8 @@ while (!WindowShouldClose())
         float dt = GetFrameTime();
 
     // DEBUG keys
-    /*if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
-    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);*/
+    if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
+    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
 
     noticeBoard.Update(dt);
     foreach (var f in farms) f.Update(dt);

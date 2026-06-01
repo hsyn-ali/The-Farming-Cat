@@ -17,12 +17,19 @@ public class HUD
     private string? _levelUpMessage;
     private float _levelUpTimer;
 
+    // NEW: Achievement notification state
+    private string? _achievementMessage;
+    private float _achievementTimer;
+
     public HUD()
     {
         // Subscribe to PlayerStats events
         PlayerStats.OnXPChanged += HandleXPChanged;
         PlayerStats.OnCoinsChanged += HandleCoinsChanged;
         PlayerStats.OnLevelUp += HandleLevelUp;
+
+        // NEW: Subscribe to achievement events
+        AchievementManager.OnAchievementUnlocked += HandleAchievementUnlocked;
 
         // Initialize cache
         _cachedLevel = PlayerStats.Level;
@@ -44,13 +51,24 @@ public class HUD
     private void HandleLevelUp(int newLevel)
     {
         _levelUpMessage = $"Level Up! You are now Level {newLevel}";
-        _levelUpTimer = 3f;  // Show for 3 seconds
+        _levelUpTimer = 3f;
+    }
+
+    // NEW: Achievement event handler
+    private void HandleAchievementUnlocked(Achievement achievement)
+    {
+        _achievementMessage = $"Achievement Unlocked: {achievement.Title}";
+        _achievementTimer = 4f;
     }
 
     public void Update(float dt)
     {
         if (_levelUpTimer > 0)
             _levelUpTimer -= dt;
+
+        // NEW: tick the achievement timer too
+        if (_achievementTimer > 0)
+            _achievementTimer -= dt;
     }
 
     public void Draw(int screenWidth, int screenHeight)
@@ -61,6 +79,9 @@ public class HUD
         DrawLevelAndXP(barX, barY);
         DrawCoins(barX, barY + BarHeight + 30);
         DrawLevelUpMessage(screenWidth, screenHeight);
+
+        // NEW: draw the achievement notification on top
+        DrawAchievementMessage(screenWidth, screenHeight);
     }
 
     private void DrawLevelAndXP(int x, int y)
@@ -121,12 +142,31 @@ public class HUD
         int x = (screenW - textWidth) / 2;
         int y = screenH / 4;
 
-        // Fade out near the end
         byte alpha = _levelUpTimer < 1f
             ? (byte)(255 * _levelUpTimer)
             : (byte)255;
 
         DrawRectangle(x - 20, y - 10, textWidth + 40, fontSize + 20, new Color((byte)0, (byte)0, (byte)0, (byte)(alpha / 2)));
         DrawText(_levelUpMessage, x, y, fontSize, new Color((byte)255, (byte)215, (byte)0, alpha));
+    }
+
+    // NEW: achievement notification rendering (bottom-center of screen)
+    private void DrawAchievementMessage(int screenW, int screenH)
+    {
+        if (_achievementTimer <= 0 || _achievementMessage == null) return;
+
+        int fontSize = 28;
+        int textWidth = MeasureText(_achievementMessage, fontSize);
+        int x = (screenW - textWidth) / 2;
+        int y = screenH - 150;
+
+        byte alpha = _achievementTimer < 1f
+            ? (byte)(255 * _achievementTimer)
+            : (byte)255;
+
+        DrawRectangle(x - 20, y - 10, textWidth + 40, fontSize + 20,
+            new Color((byte)0, (byte)0, (byte)0, (byte)(alpha / 2)));
+        DrawText(_achievementMessage, x, y, fontSize,
+            new Color((byte)255, (byte)215, (byte)0, alpha));
     }
 }
