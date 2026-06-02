@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KCbdzlqBdXo=",
+  "dgSpecHash": "kZ6q0U1e3X0=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Hsyn Ali\\Desktop\\game project\\game project.csproj",
+  "projectFilePath": "C:\\Users\\Hsyn Ali\\Desktop\\final game project\\The Farming Cat\\game project.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Hsyn Ali\\.nuget\\packages\\raylib-cs\\7.0.2\\raylib-cs.7.0.2.nupkg.sha512"
   ],

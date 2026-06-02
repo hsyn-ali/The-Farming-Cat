@@ -78,7 +78,7 @@ public class NoticeBoard : InteractableBuilding
             return;
         }
 
-        // Pick how many items in this order — 1, 2, or 3 (capped by what's unlocked)
+        // Pick how many items in this order
         int itemCount = System.Math.Min(_random.Next(1, 4), available.Count);
 
         // Shuffle so picks are unique
@@ -88,7 +88,7 @@ public class NoticeBoard : InteractableBuilding
             (available[i], available[swap]) = (available[swap], available[i]);
         }
 
-        // Take first N items, give each a random quantity 1..10
+        // Take first N items
         for (int i = 0; i < itemCount; i++)
         {
             Item chosen = available[i];
@@ -106,7 +106,7 @@ public class NoticeBoard : InteractableBuilding
 
     protected override void DrawPopupContent(int popupX, int popupY, int popupW, int popupH, Inventory inventory)
     {
-        // No order yet (waiting for next refresh)
+        // No order yet
         if (_orderItems.Count == 0)
         {
             string waitText = $"Next order in: {_timeUntilNewOrder:F0}s";

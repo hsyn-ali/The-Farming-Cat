@@ -23,7 +23,7 @@ public class Menu
 
     public void Draw(int screenW, int screenH)
     {
-        // Background image stretched to fill screen
+        // Background image 
         DrawTexturePro(
             RunTime.MenuBackground,
             new Rectangle(0, 0, RunTime.MenuBackground.Width, RunTime.MenuBackground.Height),

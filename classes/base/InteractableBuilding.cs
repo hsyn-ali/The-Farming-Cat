@@ -15,7 +15,7 @@ public abstract class InteractableBuilding
     protected abstract float Scale { get; }
     protected abstract string Title { get; }
 
-    // Purchase gating — defaults mean "always available" for things like Shop/NoticeBoard
+    // Purchase gating 
     public virtual int RequiredLevel => 1;
     public virtual int PurchaseCost => 0;
     public virtual bool RequiresPurchase => false;
@@ -120,7 +120,7 @@ public abstract class InteractableBuilding
             return;
         }
 
-        // Gate check: locked or unpurchased buildings show purchase/locked UI instead
+        // Gate check
         if (!IsAvailable)
         {
             DrawLockedContent(popupX, popupY, popupW, popupH);

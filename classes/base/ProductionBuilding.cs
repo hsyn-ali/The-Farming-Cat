@@ -15,7 +15,7 @@ public abstract class ProductionBuilding : InteractableBuilding
     protected abstract Item InputItem { get; }
     protected abstract Item OutputItem { get; }
 
-    // Subclasses provide their own wording so the popup feels "animal" or "factory"
+    // Subclasses provide their own wording
     protected abstract string IdleText { get; }       // e.g. "The animals are hungry."
     protected abstract string ProcessingVerb { get; } // e.g. "Feeding" or "Processing"
     protected abstract string ReadyText { get; }      // e.g. "Ready to collect!"

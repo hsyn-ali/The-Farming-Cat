@@ -10,14 +10,14 @@ public class HUD
     private const int Margin = 20;
     private const int FontSize = 22;
 
-    // Cached values updated only when events fire (Observer pattern)
+    // Cached values updated only when events fire
     private int _cachedLevel;
     private int _cachedXP;
     private int _cachedCoins;
     private string? _levelUpMessage;
     private float _levelUpTimer;
 
-    // NEW: Achievement notification state
+    //Achievement notification state
     private string? _achievementMessage;
     private float _achievementTimer;
 
@@ -28,7 +28,7 @@ public class HUD
         PlayerStats.OnCoinsChanged += HandleCoinsChanged;
         PlayerStats.OnLevelUp += HandleLevelUp;
 
-        // NEW: Subscribe to achievement events
+        //Subscribe to achievement events
         AchievementManager.OnAchievementUnlocked += HandleAchievementUnlocked;
 
         // Initialize cache
@@ -54,7 +54,7 @@ public class HUD
         _levelUpTimer = 3f;
     }
 
-    // NEW: Achievement event handler
+    //Achievement event handler
     private void HandleAchievementUnlocked(Achievement achievement)
     {
         _achievementMessage = $"Achievement Unlocked: {achievement.Title}";
@@ -66,7 +66,7 @@ public class HUD
         if (_levelUpTimer > 0)
             _levelUpTimer -= dt;
 
-        // NEW: tick the achievement timer too
+        //tick the achievement timer too
         if (_achievementTimer > 0)
             _achievementTimer -= dt;
     }
@@ -80,7 +80,7 @@ public class HUD
         DrawCoins(barX, barY + BarHeight + 30);
         DrawLevelUpMessage(screenWidth, screenHeight);
 
-        // NEW: draw the achievement notification on top
+        //draw the achievement notification on top
         DrawAchievementMessage(screenWidth, screenHeight);
     }
 
@@ -150,7 +150,7 @@ public class HUD
         DrawText(_levelUpMessage, x, y, fontSize, new Color((byte)255, (byte)215, (byte)0, alpha));
     }
 
-    // NEW: achievement notification rendering (bottom-center of screen)
+    //achievement notification rendering (bottom-center of screen)
     private void DrawAchievementMessage(int screenW, int screenH)
     {
         if (_achievementTimer <= 0 || _achievementMessage == null) return;

@@ -98,7 +98,7 @@ Map map = new Map("resources/assets/map/map.png");
 Player player = new Player(new Vector2(1140, 870));
 Camera camera = new Camera(player.Position, new Vector2(1920, 1080));
 
-// Map collision zones (water, walls, cliffs, out-of-bounds areas)
+// Map collision zones
 List<Rectangle> mapBoundaries = new List<Rectangle>
 {
     new Rectangle(880, 133, 1144, 100),   
@@ -130,7 +130,7 @@ Farm farm2 = new Farm(1147, 1065, requiredLevel: 4, purchaseCost: 200);
 Farm farm3 = new Farm(1625, 1065, requiredLevel: 6, purchaseCost: 400);
 List<Farm> farms = new List<Farm> { farm1, farm2, farm3 };
 
-// Buildings created via Factory Pattern
+// Buildings created 
 ChickenHouse chickenHouse = (ChickenHouse)BuildingFactory.Create("ChickenHouse", new Vector2(1430, 575));
 CowHouse cowHouse = (CowHouse)BuildingFactory.Create("CowHouse", new Vector2(1665, 575));
 SheepHouse sheepHouse = (SheepHouse)BuildingFactory.Create("SheepHouse", new Vector2(1900, 575));
@@ -147,7 +147,7 @@ List<Factory> factories = new List<Factory> { chickenFactory, cowFactory, sheepF
 List<AnimalFarm> animalFarms = new List<AnimalFarm> { chickenHouse, cowHouse, sheepHouse };
 List<InteractableBuilding> shops = new List<InteractableBuilding> { shop };
 
-// Inventory — start with wheat seeds only, plus a small coin pool
+// Inventory start
 Inventory inventory = new Inventory();
 inventory.Add(RunTime.WheatSeedItem, 20);
 /*inventory.Add(RunTime.WheatHarvestedItem,100);
@@ -180,8 +180,8 @@ while (!WindowShouldClose())
         float dt = GetFrameTime();
 
     // DEBUG keys
-    if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
-    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);
+    /*if (IsKeyPressed(KeyboardKey.F1)) PlayerStats.AddXP(100);
+    if (IsKeyPressed(KeyboardKey.F2)) PlayerStats.AddCoins(100);*/
 
     noticeBoard.Update(dt);
     foreach (var f in farms) f.Update(dt);
@@ -280,7 +280,7 @@ while (!WindowShouldClose())
                 opened = true;
             }
 
-            // FARM TILE LOGIC (only if nothing else opened)
+            // FARM TILE LOGIC 
             if (!opened)
             {
                 Vector2 feet = new Vector2(
@@ -340,7 +340,7 @@ while (!WindowShouldClose())
     BeginMode2D(camera.Raw);
         map.Draw();
         foreach (var f in farms) f.Draw(playerFeet);
-        // DEBUG: visualize map boundaries — remove before submission
+        // DEBUG: visualize map boundaries
         /*foreach (var r in mapBoundaries)
         {
             DrawRectangleRec(r, new Color(255, 0, 0, 100));
@@ -392,7 +392,7 @@ while (!WindowShouldClose())
 
     hotbar.Draw(1920, 1080);
     hud.Draw(1920, 1080);
-    //DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White); //debug
+    //DrawText($"X: {(int)player.Position.X}  Y: {(int)player.Position.Y}", 20, 200, 24, Color.White); //player position debug
         foreach (var af in animalFarms)
         {
             af.DrawPopup(1920, 1080, inventory);

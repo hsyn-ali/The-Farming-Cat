@@ -94,7 +94,7 @@ public class Farm
 
     public void Draw(Vector2 playerFeet)
     {
-        // Locked: grey overlay (mirrors the grey-tint sprite logic in InteractableBuilding)
+        // Locked: grey overlay 
         if (!IsAvailable)
         {
             DrawRectangleRec(Area, new Color(0, 0, 0, 100));
@@ -152,7 +152,7 @@ public class Farm
             return;
         }
 
-        // Gate check (this popup only opens for locked farms anyway)
+        // Gate check 
         DrawLockedContent(popupX, popupY, PopupWidth, PopupHeight);
     }
 

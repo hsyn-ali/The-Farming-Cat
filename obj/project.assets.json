@@ -74,11 +74,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Hsyn Ali\\Desktop\\game project\\game project.csproj",
+      "projectUniqueName": "C:\\Users\\Hsyn Ali\\Desktop\\final game project\\The Farming Cat\\game project.csproj",
       "projectName": "game project",
-      "projectPath": "C:\\Users\\Hsyn Ali\\Desktop\\game project\\game project.csproj",
+      "projectPath": "C:\\Users\\Hsyn Ali\\Desktop\\final game project\\The Farming Cat\\game project.csproj",
       "packagesPath": "C:\\Users\\Hsyn Ali\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Hsyn Ali\\Desktop\\game project\\obj\\",
+      "outputPath": "C:\\Users\\Hsyn Ali\\Desktop\\final game project\\The Farming Cat\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Hsyn Ali\\AppData\\Roaming\\NuGet\\NuGet.Config"

@@ -13,7 +13,7 @@ public class Item
     // XP earned when collecting/harvesting this item
     public int XpReward { get; }
 
-    // Coins received when selling this item (0 = not sellable)
+    // Coins received when selling this item
     public int SellPrice { get; }
 
     public Item(
